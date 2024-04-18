@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products | Your Online Shop</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .navbar-custom {
+            background-color: #ffffff;
+        }
+        .navbar-brand {
+            color: #343a40;
+        }
+        .navbar-nav .nav-link {
+            color: #343a40;
+        }
+        .jumbotron {
+            background-color: #f8f9fa;
+            border-radius: 0;
+        }
+        .card {
+            border: none;
+            transition: all 0.3s;
+        }
+        .card:hover {
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light navbar-custom">
+        <div class="container">
+            <a class="navbar-brand" href="#">Your Online Shop</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <div class="container mt-5">
+        <div class="jumbotron">
+            <h1 class="display-4">Welcome to Your Online Shop</h1>
+            <p class="lead">Find everything you need in one place.</p>
+            <hr class="my-4">
+        </div>
+
+        <div class="row">
+            <!-- Category Sidebar -->
+            <div class="col-md-3 mb-4">
+                <h2>Categories</h2>
+                <ul class="list-group">
+                    <li class="list-group-item">Category 1</li>
+                    <li class="list-group-item">Category 2</li>
+                    <li class="list-group-item">Category 3</li>
+                    <!-- Add more categories here -->
+                </ul>
+            </div>
+
+            <!-- Product Listings -->
+            <div class="col-md-9">
+                <h2 class="mb-4">All Products</h2>
+                <div class="row">
+                    <!-- Sample Product Cards -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <img src="https://via.placeholder.com/350" class="card-img-top" alt="Sample Product">
+                            <div class="card-body">
+                                <h5 class="card-title">Sample Product 1</h5>
+                                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                                <a href="#" class="btn btn-primary">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <img src="https://via.placeholder.com/350" class="card-img-top" alt="Sample Product">
+                            <div class="card-body">
+                                <h5 class="card-title">Sample Product 2</h5>
+                                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                                <a href="#" class="btn btn-primary">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <img src="https://via.placeholder.com/350" class="card-img-top" alt="Sample Product">
+                            <div class="card-body">
+                                <h5 class="card-title">Sample Product 3</h5>
+                                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                                <a href="#" class="btn btn-primary">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Add more sample product cards here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer mt-auto py-3 bg-light">
+        <div class="container text-center">
+            <p>&copy; 2024 Your Online Shop</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS (Optional) -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
