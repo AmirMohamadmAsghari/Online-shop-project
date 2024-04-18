@@ -35,6 +35,7 @@ class Image(models.Model):
     image = models.ImageField(upload_to='storage/ProductImages')
 
 
+
 class Review(models.Model):
     product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='ProductReviews')
     customer = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='CustomerReviews')
