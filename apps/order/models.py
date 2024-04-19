@@ -9,7 +9,7 @@ class Order(models.Model):
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     address = models.ForeignKey('Address', on_delete=models.CASCADE, related_name='AddressesOrder')
     order_date = models.DateTimeField(auto_now_add=True)
-    discount_code = models.ForeignKey('CodeDiscount', on_delete=models.CASCADE, related_name='DiscountOrder', null=True, blank=True)
+    discount_code = models.OneToOneField('CodeDiscount', on_delete=models.CASCADE, related_name='DiscountOrder', null=True, blank=True)
     status = models.BooleanField(default=False)
     session_id = models.IntegerField()
     is_deleted = models.BooleanField(default=False)
