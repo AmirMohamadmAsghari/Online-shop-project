@@ -12,7 +12,7 @@ class Product(models.Model):
     stock = models.IntegerField()
     sales_number = models.IntegerField(default=0)
     brand = models.CharField(max_length=255)
-    discount = models.ForeignKey('Discount',on_delete=models.CASCADE,null=True, blank=True, related_name='DiscountP')
+    discount = models.OneToOneField('Discount',on_delete=models.CASCADE,null=True, blank=True, related_name='DiscountP')
     category = models.ForeignKey('Category', on_delete=models.CASCADE, related_name='CategoryProducts')
     is_delete = models.BooleanField(default=False)
 
@@ -20,7 +20,7 @@ class Product(models.Model):
 class Category(models.Model):
     name = models.CharField(max_length=255, unique=True)
     parent_category = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
-    discount = models.ForeignKey('Discount', on_delete=models.CASCADE, null=True, blank=True)
+    discount = models.OneToOneField('Discount', on_delete=models.CASCADE, null=True, blank=True)
     is_delete = models.BooleanField(default=False)
 
 
@@ -33,7 +33,6 @@ class Discount(models.Model):
 class Image(models.Model):
     product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='ProductImages')
     image = models.ImageField(upload_to='storage/ProductImages')
-
 
 
 class Review(models.Model):
