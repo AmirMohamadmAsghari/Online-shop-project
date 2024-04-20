@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Order, OrderItem, CodeDiscount, Payment, Address
+from .models import Order, OrderItem, CodeDiscount, Payment
 
 
 class OrderItemInline(admin.TabularInline):
@@ -26,13 +26,9 @@ class PaymentAdmin(admin.ModelAdmin):
     list_filter = ('payment_date', 'payment_type')
 
 
-class AddressAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'name', 'postal_code', 'city', 'province', 'is_deleted')
-    search_fields = ('user__email', 'name', 'postal_code')
-    list_filter = ('city', 'province', 'is_deleted')
 
 
 admin.site.register(Order, OrderAdmin)
 admin.site.register(CodeDiscount, CodeDiscountAdmin)
 admin.site.register(Payment, PaymentAdmin)
-admin.site.register(Address, AddressAdmin)
+
