@@ -8,22 +8,22 @@ class OrderItemInline(admin.TabularInline):
 
 
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'customer', 'total_amount', 'order_date', 'status')
-    search_fields = ('customer__email', 'order_date')
-    list_filter = ('status', 'order_date')
+    list_display = ('id', 'customer', 'total_amount', 'created')
+    search_fields = ('customer__email', 'created')
+    # list_filter = 'created'
     inlines = [OrderItemInline]
 
 
 class CodeDiscountAdmin(admin.ModelAdmin):
-    list_display = ('id', 'amount', 'code', 'is_deleted')
+    list_display = ('id', 'amount', 'code')
     search_fields = ('code',)
-    list_filter = ('is_deleted',)
+    #list_filter = ('is_deleted')
 
 
 class PaymentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'order', 'payment_date', 'payment_type', 'transaction_id')
-    search_fields = ('order__id', 'payment_date')
-    list_filter = ('payment_date', 'payment_type')
+    list_display = ('id', 'order', 'created', 'payment_type', 'transaction_id')
+    search_fields = ('order__id', 'created')
+    #list_filter = ('created', 'payment_type')
 
 
 
