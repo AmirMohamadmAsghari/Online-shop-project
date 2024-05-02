@@ -1,12 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home | Your Online Shop</title>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <!-- Custom CSS -->
+{% extends 'base.html' %}
+{% block title%}Home{% endblock %}
+    {% block style %}
     <style>
         .jumbotron {
             background-image: url('banner.jpg');
@@ -21,12 +15,11 @@
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         }
     </style>
+    {% endblock %}
 </head>
 <body>
-    <!-- Navbar -->
-    {% include 'navbar.html' %}
+{% block content %}
 
-    <!-- Main content -->
     <div class="container">
         <!-- Hero section -->
         <div class="jumbotron text-center" style="color: blanchedalmond">
@@ -108,5 +101,6 @@
 
     <!-- Bootstrap JS (Optional) -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+{% endblock %}
 </body>
-</html>
+
