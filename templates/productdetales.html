@@ -1,116 +1,151 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Details | Your Online Shop</title>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <!-- Custom CSS -->
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-        }
-        .navbar-custom {
-            background-color: #ffffff;
-        }
-        .navbar-brand {
-            color: #343a40;
-        }
-        .navbar-nav .nav-link {
-            color: #343a40;
-        }
-        .jumbotron {
-            background-color: #f8f9fa;
-            border-radius: 0;
-        }
-        .card {
-            border: none;
-            transition: all 0.3s;
-        }
-        .card:hover {
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        }
-        .product-photo {
-            max-width: 100%;
-            height: auto;
-        }
-    </style>
-</head>
-<body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light navbar-custom">
-        <div class="container">
-            <a class="navbar-brand" href="#">Your Online Shop</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+{% extends 'base.html' %}
+{% block title %}Product Details{% endblock %}
+{% block style %}
+<style>
 
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item active">
-                        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Products</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Contact</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+    }
 
-    <!-- Main content -->
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-md-6">
-                <img src="product-photo.jpg" class="product-photo" alt="Product Photo">
-            </div>
-            <div class="col-md-6">
-                <div class="jumbotron">
-                    <h1 class="display-4">Product Name</h1>
-                    <p class="lead">Product Description goes here.</p>
-                    <hr class="my-4">
-                    <p>Price: $99.99</p>
-                    <p>Stock: 50</p>
-                    <button type="button" class="btn btn-primary">Add to Cart</button>
+    .navbar-nav .nav-link {
+        color: #343a40;
+    }
+
+    .jumbotron {
+        background-color: #f8f9fa;
+        border-radius: 0;
+    }
+
+    .card {
+        border: none;
+        transition: all 0.3s;
+    }
+
+    .card:hover {
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .product-photo {
+        width: 100%; /* Adjust the width of the photo */
+        height: auto; /* Maintain aspect ratio */
+        max-height: 400px; /* Limit the maximum height */
+    }
+
+    .slider {
+        max-width: 500px; /* Limit the maximum width of the slider */
+        margin: 0 auto; /* Center the slider horizontally */
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="slider">
+                {% for image in images %}
+                <div>
+                    <img src="{{ image.image.url }}" class="product-photo" alt="Product Photo">
                 </div>
+                {% endfor %}
             </div>
         </div>
-        <div class="row mt-5">
-            <div class="col-md-6">
-                <!-- Reviews -->
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Reviews</h5>
-                        <!-- Add review cards here -->
+
+        <div class="col-md-6">
+            <div class="jumbotron">
+                <!-- Display the product name dynamically -->
+                <h1 class="display-4">{{ product.title }}</h1>
+                <!-- Display the product description dynamically -->
+                <p class="lead">{{ product.description }}</p>
+                <hr class="my-4">
+                <!-- Display the product price dynamically -->
+                <p>Price: ${{ product.price }}</p>
+                <!-- Display the product stock dynamically -->
+                <p>Stock: {{ product.stock }}</p>
+                <p>Brand: {{ product.brand }}</p>
+                <!-- Add to Cart button -->
+                <button type="button" class="btn btn-primary">Add to Cart</button>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <!-- Reviews -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title" id="reviewsTitle">Reviews</h5>
+                    <!-- Add review cards here -->
+                    <div id="reviewsPage" style="display: none;">
+                        <!-- Review cards will be dynamically added here -->
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <!-- Sales Information -->
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Sales Information</h5>
-                        <p>Total Sales: 100</p>
-                        <!-- Add more sales information here -->
-                    </div>
+        </div>
+        <div class="col-md-6">
+            <!-- Sales Information -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Sales Information</h5>
+                    <!-- Display total sales dynamically -->
+                    <p>Total Sales: {{ product.sales_number }}</p>
+                    <!-- Add more sales information here -->
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer mt-auto py-3 bg-light">
-        <div class="container text-center">
-            <p>&copy; 2024 Your Online Shop</p>
-        </div>
-    </footer>
+</div>
+{% endblock %}
+{% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
+<script>
+    $(document).ready(function(){
+        // Initialize Slick Carousel here
+        $('.slider').slick({
+            dots: true,
+            infinite: true,
+            speed: 300,
+            slidesToShow: 1,
+            adaptiveHeight: true
+        });
+    });
 
-    <!-- Bootstrap JS (Optional) -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
-</html>
+    $(document).ready(function(){
+    $('#reviewsTitle').click(function(){
+        $('#reviewsPage').toggle();
+        if ($('#reviewsPage').is(':visible')) {
+            fetchReviews();
+        }
+    });
+
+    function fetchReviews() {
+        var productID = '{{ product.id }}';
+        var reviewsAPIURL = '/product/api/reviews/' + productID + '/'; // Update the URL as per your actual URL pattern
+        $.ajax({
+            url: reviewsAPIURL,
+            success: function(data) {
+                $('#reviewsPage').empty();
+                data.forEach(function(review) {
+                    var reviewHtml = `
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">${review.customer__username}</h5>
+                                <h5 class="card-title">${review.rating}</h5>
+                                <p class="card-text">${review.review_Text}</p>
+                                <p class="card-text">Review Date: ${review.created}</p>
+                                <hr>
+                            </div>
+                        </div>
+                    `;
+                    $('#reviewsPage').append(reviewHtml);
+                });
+            }
+        });
+    }
+});
+
+</script>
+</script>
+{% endblock %}
