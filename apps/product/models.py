@@ -57,7 +57,7 @@ class Image(TimeStampedMixin):
 class Review(TimeStampedMixin, LogicalMixin):
     product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='ProductReviews')
     customer = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='CustomerReviews')
-    rating = models.DecimalField(max_digits=10, decimal_places=2)
+    rating = models.DecimalField(max_digits=10, decimal_places=1)
     review_Text = models.TextField()
 
     class Meta:
