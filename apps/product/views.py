@@ -27,7 +27,8 @@ class ProductDetailView(View):
         product = get_object_or_404(Product, id=product_id)
         images = Image.objects.filter(product_id=product.id)
         review = Review.objects.filter(product_id=product.id)
-        return render(request, self.template_name, {'product': product, 'images':images, 'review': review})
+        discounted_price = product.price - product.discount.amount if product.discount else None
+        return render(request, self.template_name, {'product': product, 'images':images, 'review': review, 'discounted_price': discounted_price})
 
 # =====================API_View=====================
 
