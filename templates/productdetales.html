@@ -55,20 +55,24 @@
 
         <div class="col-md-6">
             <div class="jumbotron">
-                <!-- Display the product name dynamically -->
                 <h1 class="display-4">{{ product.title }}</h1>
-                <!-- Display the product description dynamically -->
                 <p class="lead">{{ product.description }}</p>
                 <hr class="my-4">
-                <!-- Display the product price dynamically -->
                 <p>Price: ${{ product.price }}</p>
-                <!-- Display the product stock dynamically -->
+                {% if discounted_price %}
+                    <p>Discount: ${{ product.discount.amount }}</p>
+                    <p>Discounted Price: ${{ discounted_price }}</p>
+                {% else %}
+                    <p>No discount available</p>
+                {% endif %}
                 <p>Stock: {{ product.stock }}</p>
                 <p>Brand: {{ product.brand }}</p>
-                <!-- Add to Cart button -->
                 <button type="button" class="btn btn-primary">Add to Cart</button>
             </div>
         </div>
+
+
+
     </div>
     <div class="row mt-5">
         <div class="col-md-6">
