@@ -1,92 +1,97 @@
-from datetime import datetime
 from django.test import TestCase
-from apps.user.models import CustomUser
+from .models import Order, OrderItem, CodeDiscount, Payment
+from apps.user.models import CustomUser, Address
 from apps.product.models import Product, Category
-from .models import Order, OrderItem, Address, Payment, CodeDiscount
 
-
-class ModelTestCase(TestCase):
+class OrderModelTestCase(TestCase):
     def setUp(self):
-        # Create a CustomUser instance for testing
-        self.user = CustomUser.objects.create(email='test@example.com', username='testuser', password='password')
+        self.customer = CustomUser.objects.create(email='test@example.com', username='testuser')
+        self.address = Address.objects.create(user=self.customer, name='Home', detail_address='123 Main St', postal_code='12345', description='Home Address', city='City', province='Province')
+        self.order = Order.objects.create(customer=self.customer, total_amount=100.0, address=self.address)
 
-        # Create a Category instance for testing
-        self.category = Category.objects.create(name='Electronics')
+    def test_create_order(self):
+        self.assertEqual(Order.objects.count(), 1)
+        order = Order.objects.get(customer=self.customer)
+        self.assertEqual(order.total_amount, 100.0)
+        self.assertEqual(order.status, False)
 
-        # Create a Product instance for testing
-        self.product = Product.objects.create(
-            seller=self.user,
-            title='Test Product',
-            description='This is a test product',
-            price=100.00,
-            stock=50,
-            brand='Test Brand',
-            category=self.category  # Include the category field
-        )
+    def test_update_order(self):
+        order = Order.objects.get(customer=self.customer)
+        order.status = True
+        order.save()
+        updated_order = Order.objects.get(customer=self.customer)
+        self.assertEqual(updated_order.status, True)
 
-        # Create a CodeDiscount instance for testing
-        self.discount = CodeDiscount.objects.create(amount=10, code=1234)
+    def test_delete_order(self):
+        order = Order.objects.get(customer=self.customer)
+        order.delete()
+        self.assertEqual(Order.objects.count(), 0)
 
-        # Create an Address instance for testing
-        self.address = Address.objects.create(
-            user=self.user,
-            name='Test Address',
-            detail_address='123 Test Street',
-            postal_code=12345,
-            description='Test address description',
-            city='Test City',
-            province='Test Province'
-        )
+class OrderItemModelTestCase(TestCase):
+    def setUp(self):
 
-        # Create an Order instance for testing
-        self.order = Order.objects.create(
-            customer=self.user,
-            total_amount=100.00,
-            address=self.address,
-            order_date=datetime.now(),
-            discount_code=self.discount,
-            status=False,
-            session_id=12345
-        )
+        self.customer = CustomUser.objects.create(email='test@example.com', username='testuser')
+        self.address = Address.objects.create(user=self.customer, name='Home', detail_address='123 Main St', postal_code='12345', description='Home Address', city='City', province='Province')
+        self.order = Order.objects.create(customer=self.customer, total_amount=100.0, address=self.address)
+        self.category = Category.objects.create(name='Default Category')
+        self.product = Product.objects.create(seller=self.customer, title='Test Product', description='Test Description', price=50.0, stock=10, brand='Brand', category=self.category)
+        self.order_item = OrderItem.objects.create(order=self.order, product=self.product, quantity=2, total_price=100.0)
 
-        # Create an OrderItem instance for testing
-        self.order_item = OrderItem.objects.create(
-            order=self.order,
-            product=self.product,
-            quantity=2,
-            total_price=200.00
-        )
+    def test_create_order_item(self):
+        self.assertEqual(OrderItem.objects.count(), 1)
+        order_item = OrderItem.objects.get(order=self.order)
+        self.assertEqual(order_item.quantity, 2)
+        self.assertEqual(order_item.total_price, 100.0)
 
-        # Create a Payment instance for testing
-        self.payment = Payment.objects.create(
-            order=self.order,
-            payment_date=datetime.now(),
-            payment_type='Credit Card',
-            transaction_id='123456789'
-        )
+    def test_update_order_item(self):
+        order_item = OrderItem.objects.get(order=self.order)
+        order_item.quantity = 3
+        order_item.save()
+        updated_order_item = OrderItem.objects.get(order=self.order)
+        self.assertEqual(updated_order_item.quantity, 3)
 
-    def test_order_creation(self):
-        self.assertEqual(self.order.customer, self.user)
-        self.assertEqual(self.order.total_amount, 100.00)
-        self.assertEqual(self.order.address, self.address)
-        self.assertFalse(self.order.status)  # Asserting that status is initially False
+    def test_delete_order_item(self):
+        order_item = OrderItem.objects.get(order=self.order)
+        order_item.delete()
+        self.assertEqual(OrderItem.objects.count(), 0)
 
-    def test_order_item_creation(self):
-        self.assertEqual(self.order_item.order, self.order)
-        self.assertEqual(self.order_item.product, self.product)
-        self.assertEqual(self.order_item.quantity, 2)
-        self.assertEqual(self.order_item.total_price, 200.00)
+class CodeDiscountModelTestCase(TestCase):
+    def test_create_code_discount(self):
+        code_discount = CodeDiscount.objects.create(amount=10, code=12345)
+        self.assertEqual(CodeDiscount.objects.count(), 1)
+        self.assertEqual(code_discount.amount, 10)
+        self.assertEqual(code_discount.code, 12345)
 
-    def test_address_creation(self):
-        self.assertEqual(self.address.user, self.user)
-        self.assertEqual(self.address.name, 'Test Address')
-        self.assertEqual(self.address.detail_address, '123 Test Street')
-        self.assertEqual(self.address.postal_code, 12345)
-        self.assertEqual(self.address.description, 'Test address description')
-        self.assertEqual(self.address.city, 'Test City')
-        self.assertEqual(self.address.province, 'Test Province')
+    # Add similar test methods for updating and deleting code discounts
 
-    def test_payment_creation(self):
-        self.assertEqual(self.payment.order, self.order)
-        self.assertEqual(self.payment.payment_type, 'Credit Card')
-        self.assertEqual(self.payment.transaction_id, '123456789')
+class PaymentModelTestCase(TestCase):
+    def setUp(self):
+        self.customer = CustomUser.objects.create(email='test@example.com', username='testuser')
+        self.address = Address.objects.create(user=self.customer, name='Home', detail_address='123 Main St', postal_code='12345', description='Home Address', city='City', province='Province')
+        self.order = Order.objects.create(customer=self.customer, total_amount=100.0, address=self.address)
+
+    def test_create_payment(self):
+        payment = Payment.objects.create(order=self.order, payment_type='Credit Card', transaction_id=123456)
+        self.assertEqual(Payment.objects.count(), 1)
+        self.assertEqual(payment.payment_type, 'Credit Card')
+        self.assertEqual(payment.transaction_id, 123456)
+
+
+class PaymentModelTestCase(TestCase):
+    def setUp(self):
+        self.customer = CustomUser.objects.create(email='test@example.com', username='testuser')
+        self.address = Address.objects.create(user=self.customer, name='Home', detail_address='123 Main St', postal_code='12345', description='Home Address', city='City', province='Province')
+        self.order = Order.objects.create(customer=self.customer, total_amount=100.0, address=self.address)
+        self.payment = Payment.objects.create(order=self.order, payment_type='Credit Card', transaction_id=123456)
+
+    def test_update_payment(self):
+        payment = Payment.objects.get(order=self.order)
+        payment.payment_type = 'PayPal'
+        payment.save()
+        updated_payment = Payment.objects.get(order=self.order)
+        self.assertEqual(updated_payment.payment_type, 'PayPal')
+
+    def test_delete_payment(self):
+        payment = Payment.objects.get(order=self.order)
+        payment.delete()
+        self.assertEqual(Payment.objects.count(), 0)
