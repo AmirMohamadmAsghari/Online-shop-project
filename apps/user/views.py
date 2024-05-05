@@ -2,7 +2,7 @@ import json
 from django.http import HttpResponse, JsonResponse
 from .models import CustomUser
 from django.shortcuts import render, redirect
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.views import View
@@ -23,6 +23,7 @@ class RegisterUserView(View):
     def post(self, request):
         email = request.POST.get('email')
         email = email.lower()
+        request.session['email'] = email
         username = request.POST.get('username')
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
@@ -51,7 +52,37 @@ class RegisterUserView(View):
 
         user = CustomUser.objects.create_user(username=username, email=email, password=password)
         messages.success(request, 'User registered successfully.')
-        return redirect('login')
+        return redirect('email_verification')
+
+
+class Email_Verification(View):
+    template_name = 'email_verification.html'
+
+    def get(self,request):
+        email = request.session.get('email')
+        otp_code = generate_otp(email)
+        send_otp_email(email, otp_code)
+        return render(request, self.template_name)
+
+    def post(self,request):
+        otp_code = request.POST.get('otp_code')
+        email = request.session.get('email')
+        try:
+            user = CustomUser.objects.get(email=email)
+            print(otp_code, user.otp_code)
+
+            if str(user.otp_code) == str(otp_code):
+                user.is_active = True
+                user.otp_code = None
+                user.save()
+                messages.success(request, 'Email verified successfully.')
+                return redirect('login')
+            else:
+                messages.error(request, 'Invalid OTP code.')
+
+        except ObjectDoesNotExist:
+            messages.error(request, 'User does not exist.')
+        return redirect('email_verification')
 
 
 class SendOTPCodeView(View):
