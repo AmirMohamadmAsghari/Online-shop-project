@@ -1,0 +1,68 @@
+<!-- email_verification.html -->
+{% extends 'base.html' %}
+{% block title %}Email Verification{% endblock %}
+{% block style %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        padding: 20px;
+    }
+
+    h1 {
+        color: #333;
+        text-align: center;
+    }
+
+    form {
+        max-width: 400px;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+        font-weight: bold;
+    }
+
+    input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
+
+    button {
+        width: 100%;
+        padding: 10px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #0056b3;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<body>
+    <h1>Email Verification</h1>
+    <form action="{% url 'email_verification' %}" method="post">
+        {% csrf_token %}
+        <div>
+            <label for="otp_code">Enter OTP Code:</label>
+            <input type="text" id="otp_code" name="otp_code" required>
+            <!-- You might also include a hidden field for the email -->
+            <input type="hidden" name="email" value="{{ email }}">
+        </div>
+        <button type="submit">Verify</button>
+    </form>
+</body>
+{% endblock %}
