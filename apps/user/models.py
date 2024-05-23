@@ -4,6 +4,8 @@ from .manager import CustomUserManager
 from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
 from apps.core.models import TimeStampedMixin, LogicalMixin
+
+
 # Create your models her
 
 
@@ -18,6 +20,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin, LogicalMixin, TimeStampedMi
     name = models.CharField(max_length=255,blank=True,null=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now=True)
+    discount_code = models.ForeignKey('CodeDiscount', on_delete=models.CASCADE, related_name='DiscountOrder', null=True, blank=True)
     objects = CustomUserManager()
 
     class Meta:
@@ -46,3 +49,8 @@ class Address(TimeStampedMixin, LogicalMixin):
 
     def __str__(self):
         return f'{self.name} - {self.city} - {self.province}'
+
+
+class CodeDiscount(LogicalMixin, TimeStampedMixin):
+    amount = models.IntegerField(default=0)
+    code = models.IntegerField()
