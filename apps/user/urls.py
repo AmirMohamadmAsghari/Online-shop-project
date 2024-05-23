@@ -1,5 +1,7 @@
 from django.urls import path
 from .views import RegisterUserView, LoginUserView, SendOTPCodeView, LogoutView, Email_Verification
+from django.conf.urls import handler404
+from .views import custom_404_view
 
 
 urlpatterns = [
@@ -9,3 +11,4 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
     path('send-otp/', SendOTPCodeView.as_view(), name='send_otp'),
 ]
+handler404 = custom_404_view
