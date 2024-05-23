@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Order, OrderItem, CodeDiscount, Payment
+from .models import Order, OrderItem, Payment
+from apps.user.models import CodeDiscount
 
 
 class OrderItemInline(admin.TabularInline):
