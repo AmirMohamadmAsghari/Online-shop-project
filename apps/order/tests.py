@@ -1,6 +1,6 @@
 from django.test import TestCase
-from .models import Order, OrderItem, CodeDiscount, Payment
-from apps.user.models import CustomUser, Address
+from .models import Order, OrderItem, Payment
+from apps.user.models import CustomUser, Address, CodeDiscount
 from apps.product.models import Product, Category
 
 class OrderModelTestCase(TestCase):
@@ -13,14 +13,14 @@ class OrderModelTestCase(TestCase):
         self.assertEqual(Order.objects.count(), 1)
         order = Order.objects.get(customer=self.customer)
         self.assertEqual(order.total_amount, 100.0)
-        self.assertEqual(order.status, False)
+        self.assertEqual(order.status, 'open')  # Change to match string value
 
     def test_update_order(self):
         order = Order.objects.get(customer=self.customer)
-        order.status = True
+        order.status = 'closed'  # Update to match string value
         order.save()
         updated_order = Order.objects.get(customer=self.customer)
-        self.assertEqual(updated_order.status, True)
+        self.assertEqual(updated_order.status, 'closed')  # Change to match string value
 
     def test_delete_order(self):
         order = Order.objects.get(customer=self.customer)
@@ -29,7 +29,6 @@ class OrderModelTestCase(TestCase):
 
 class OrderItemModelTestCase(TestCase):
     def setUp(self):
-
         self.customer = CustomUser.objects.create(email='test@example.com', username='testuser')
         self.address = Address.objects.create(user=self.customer, name='Home', detail_address='123 Main St', postal_code='12345', description='Home Address', city='City', province='Province')
         self.order = Order.objects.create(customer=self.customer, total_amount=100.0, address=self.address)
@@ -69,20 +68,13 @@ class PaymentModelTestCase(TestCase):
         self.customer = CustomUser.objects.create(email='test@example.com', username='testuser')
         self.address = Address.objects.create(user=self.customer, name='Home', detail_address='123 Main St', postal_code='12345', description='Home Address', city='City', province='Province')
         self.order = Order.objects.create(customer=self.customer, total_amount=100.0, address=self.address)
+        self.payment = Payment.objects.create(order=self.order, payment_type='Credit Card', transaction_id=123456)
 
     def test_create_payment(self):
         payment = Payment.objects.create(order=self.order, payment_type='Credit Card', transaction_id=123456)
-        self.assertEqual(Payment.objects.count(), 1)
+        self.assertEqual(Payment.objects.count(), 2)  # Now expecting 2 because one is created in setUp
         self.assertEqual(payment.payment_type, 'Credit Card')
         self.assertEqual(payment.transaction_id, 123456)
-
-
-class PaymentModelTestCase(TestCase):
-    def setUp(self):
-        self.customer = CustomUser.objects.create(email='test@example.com', username='testuser')
-        self.address = Address.objects.create(user=self.customer, name='Home', detail_address='123 Main St', postal_code='12345', description='Home Address', city='City', province='Province')
-        self.order = Order.objects.create(customer=self.customer, total_amount=100.0, address=self.address)
-        self.payment = Payment.objects.create(order=self.order, payment_type='Credit Card', transaction_id=123456)
 
     def test_update_payment(self):
         payment = Payment.objects.get(order=self.order)
