@@ -28,7 +28,7 @@ def validate_password_strength(value):
     if not any(char.isdigit() for char in value):
         raise ValidationError(_("Password must contain at least one digit."))
 
-    # Optionally, check for special characters
+
     # if not any(char in "!@#$%^&*()-_+=<>,.?/:;{}[]" for char in value):
     #     raise ValidationError(_("Password must contain at least one special character."))
 
