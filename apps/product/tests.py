@@ -1,72 +1,121 @@
 from django.test import TestCase
-from .models import Product, Category, Discount, Image, Review
 from apps.user.models import CustomUser
-from datetime import date
+from .models import Product, Category, Discount, Image, Review
 
 
-class ModelTestCase(TestCase):
+class ProductModelTestCase(TestCase):
     def setUp(self):
-        # Create a CustomUser instance for testing
-        self.user = CustomUser.objects.create(email='test@example.com', username='testuser', password='password')
-
-        # Create a Discount instance for testing
-        self.discount = Discount.objects.create(amount=10, type='Percentage')
-
-        # Create a Category instance for testing
+        self.seller = CustomUser.objects.create(email='seller@example.com', password='password')
         self.category = Category.objects.create(name='Electronics')
-
-        # Create a Product instance for testing
         self.product = Product.objects.create(
-            seller=self.user,
-            title='Test Product',
-            description='This is a test product',
-            price=100.00,
-            stock=50,
-            brand='Test Brand',
-            discount=self.discount,
+            seller=self.seller,
+            title='Example Product',
+            description='Example description.',
+            price=100.0,
+            stock=10,
+            brand='Example Brand',
             category=self.category
         )
 
-        # Create an Image instance for testing
-        self.image = Image.objects.create(product=self.product, image='path/to/image.jpg')
+    def test_create_product(self):
+        self.assertEqual(Product.objects.count(), 1)
 
-        # Create a Review instance for testing
-        self.review = Review.objects.create(
-            product=self.product,
-            customer=self.user,
-            rating=4.5,
-            review_Text='This is a test review',
-            review_Date=date.today()
+    def test_update_product(self):
+        self.product.title = 'Updated Product'
+        self.product.save()
+        self.assertEqual(Product.objects.get(pk=self.product.pk).title, 'Updated Product')
+
+    def test_delete_product(self):
+        self.product.delete()
+        self.assertEqual(Product.objects.count(), 0)
+
+
+class CategoryModelTestCase(TestCase):
+    def setUp(self):
+        self.category = Category.objects.create(name='Electronics')
+
+    def test_create_category(self):
+        self.assertEqual(Category.objects.count(), 1)
+
+    def test_update_category(self):
+        self.category.name = 'Updated Category'
+        self.category.save()
+        self.assertEqual(Category.objects.get(pk=self.category.pk).name, 'Updated Category')
+
+    def test_delete_category(self):
+        self.category.delete()
+        self.assertEqual(Category.objects.count(), 0)
+
+class DiscountModelTestCase(TestCase):
+    def setUp(self):
+        self.discount = Discount.objects.create(amount=10, type='Percentage', expiration_date='2024-12-31')
+
+    def test_create_discount(self):
+        self.assertEqual(Discount.objects.count(), 1)
+
+    def test_update_discount(self):
+        self.discount.amount = 20
+        self.discount.save()
+        self.assertEqual(Discount.objects.get(pk=self.discount.pk).amount, 20)
+
+    def test_delete_discount(self):
+        self.discount.delete()
+        self.assertEqual(Discount.objects.count(), 0)
+
+
+class ImageModelTestCase(TestCase):
+    def setUp(self):
+        self.seller = CustomUser.objects.create(email='seller@example.com', password='password')
+        self.category = Category.objects.create(name='Electronics')
+        self.product = Product.objects.create(
+            seller=self.seller,
+            title='Example Product',
+            description='Example description.',
+            price=100.0,
+            stock=10,
+            brand='Example Brand',
+            category=self.category
         )
+        self.image = Image.objects.create(product=self.product, image='example.jpg')
 
-    def test_product_creation(self):
-        def test_product_creation(self):
-            # Assert product attributes
-            self.assertEqual(self.product.title, 'Test Product')
-            self.assertEqual(self.product.seller, self.user)
-            self.assertEqual(self.product.description, 'This is a test product')
-            self.assertEqual(self.product.price, 100.00)
-            self.assertEqual(self.product.stock, 50)
-            self.assertEqual(self.product.brand, 'Test Brand')
-            self.assertEqual(self.product.discount, self.discount)
-            self.assertEqual(self.product.category, self.category)
-            self.assertEqual(self.product.ProductImages.first(), self.image)
-            self.assertEqual(self.product.ProductReviews.first(), self.review)
+    def test_create_image(self):
+        self.assertEqual(Image.objects.count(), 1)
 
-    def test_category_creation(self):
-        self.assertEqual(self.category.name, 'Electronics')
+    def test_update_image(self):
+        self.image.image = 'updated.jpg'
+        self.image.save()
+        self.assertEqual(Image.objects.get(pk=self.image.pk).image, 'updated.jpg')
+
+    def test_delete_image(self):
+        self.image.delete()
+        self.assertEqual(Image.objects.count(), 0)
 
 
-    def test_discount_creation(self):
-        self.assertEqual(self.discount.amount, 10)
-        self.assertEqual(self.discount.type, 'Percentage')
+class ReviewModelTestCase(TestCase):
+    def setUp(self):
+        self.seller = CustomUser.objects.create(email='seller@example.com', password='password')
+        self.customer = CustomUser.objects.create(email='customer@example.com', password='password')
+        self.category = Category.objects.create(name='Electronics')
+        self.product = Product.objects.create(
+            seller=self.seller,
+            title='Example Product',
+            description='Example description.',
+            price=100.0,
+            stock=10,
+            brand='Example Brand',
+            category=self.category
+        )
+        self.review = Review.objects.create(product=self.product, customer=self.customer, rating=4.5, review_Text='Great product!')
 
-    def test_image_creation(self):
-        self.assertEqual(self.image.product, self.product)
+    def test_create_review(self):
+        self.assertEqual(Review.objects.count(), 1)
 
-    def test_review_creation(self):
-        self.assertEqual(self.review.customer, self.user)
-        self.assertEqual(self.review.product, self.product)
-        self.assertEqual(self.review.rating,4.5)
-        self.assertEqual(self.review.review_Text,'This is a test review')
+    def test_update_review(self):
+        self.review.rating = 5.0
+        self.review.save()
+        self.assertEqual(Review.objects.get(pk=self.review.pk).rating, 5.0)
+
+    def test_delete_review(self):
+        self.review.delete()
+        self.assertEqual(Review.objects.count(), 0)
 

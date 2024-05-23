@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock %}
+{% block style %}
+<head>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .form-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        .form-title {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group label {
+            font-weight: bold;
+        }
+        .form-group input {
+            border-radius: 20px;
+            padding: 10px 20px;
+            border: 1px solid #ced4da;
+        }
+        .form-group input:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .btn-login {
+            border-radius: 20px;
+            padding: 12px 30px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+{% endblock %}
+<body>
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="form-container">
+                <h2 class="form-title">User Login</h2>
+                <form id="login-form" method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="login-option">Choose Login Option</label>
+                        <select class="form-control" id="login-option" name="login_option" required>
+                            <option value="otp">Login with OTP</option>
+                            <option value="credentials">Login with Username and Password</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="otp-login" style="display: none;">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" >
+                        <button id="send-otp-btn" type="button" class="btn btn-primary btn-block">Send OTP Code</button>
+                        <label for="otp-code">OTP Code</label>
+                        <input type="text" class="form-control" id="otp-code" name="otp_code">
+                    </div>
+                    <div class="form-group" id="credentials-login">
+                        <label for="username">Username</label>
+                        <input type="text" class="form-control" id="username" name="username">
+                        <label for="password">Password</label>
+                        <input type="password" class="form-control" id="password" name="password">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block btn-login">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    document.getElementById('login-option').addEventListener('change', function() {
+        var otpLogin = document.getElementById('otp-login');
+        var credentialsLogin = document.getElementById('credentials-login');
+        if (this.value === 'otp') {
+            otpLogin.style.display = 'block';
+            credentialsLogin.style.display = 'none';
+        } else {
+            otpLogin.style.display = 'none';
+            credentialsLogin.style.display = 'block';
+        }
+    });
+
+    document.getElementById('send-otp-btn').addEventListener('click', function() {
+        var email = document.getElementById('email').value;
+        if (email) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '{% url 'send_otp' %}', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}'); // Add this line to include the CSRF token
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        alert('OTP code sent successfully!');
+                    } else {
+                        alert('Failed to send OTP code. Please try again later.');
+                    }
+                }
+            };
+            xhr.send(JSON.stringify({ email: email }));
+        } else {
+            alert('Please enter your email address.');
+        }
+    });
+
+</script>
+{% endblock %}
+</body>
+</html>

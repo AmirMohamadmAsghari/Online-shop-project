@@ -13,28 +13,28 @@ class ReviewInline(admin.TabularInline):
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'seller', 'price', 'stock', 'category', 'is_delete')
+    list_display = ('id', 'title', 'seller', 'price', 'stock', 'category')
     search_fields = ('title', 'seller__email', 'category__name')
-    list_filter = ('seller', 'category', 'is_delete')
+    #list_filter = ('seller', 'category')
     inlines = [ImageInline, ReviewInline]
 
 
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'parent_category', 'discount', 'is_delete')
+    list_display = ('id', 'name', 'parent_category', 'discount')
     search_fields = ('name', 'parent_category__name')
-    list_filter = ('parent_category', 'is_delete')
+    #list_filter = ('parent_category')
 
 
 class DiscountAdmin(admin.ModelAdmin):
-    list_display = ('id', 'amount', 'type', 'is_deleted')
+    list_display = ('id', 'amount', 'type')
     search_fields = ('type',)
-    list_filter = ('type', 'is_deleted')
+    #list_filter = ('type')
 
 
 class ReviewAdmin(admin.ModelAdmin):
-    list_display = ('id', 'product', 'customer', 'rating', 'review_Date', 'is_delete')
+    list_display = ('id', 'product', 'customer', 'rating', 'created')
     search_fields = ('product__title', 'customer__email')
-    list_filter = ('rating', 'review_Date', 'is_delete')
+    #list_filter = ('rating', 'created')
 
 
 admin.site.register(Product, ProductAdmin)

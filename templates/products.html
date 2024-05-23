@@ -1,133 +1,214 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Products | Your Online Shop</title>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <!-- Custom CSS -->
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-        }
-        .navbar-custom {
-            background-color: #ffffff;
-        }
-        .navbar-brand {
-            color: #343a40;
-        }
-        .navbar-nav .nav-link {
-            color: #343a40;
-        }
-        .jumbotron {
-            background-color: #f8f9fa;
-            border-radius: 0;
-        }
-        .card {
-            border: none;
-            transition: all 0.3s;
-        }
-        .card:hover {
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        }
-    </style>
+<!-- Inside your products.html template -->
+{% extends 'base.html' %}
+{% block title%}Product{% endblock %}
+{% block style %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+    }
+    .navbar-custom {
+        background-color: #ffffff;
+    }
+    .navbar-brand {
+        color: #343a40;
+    }
+    .navbar-nav .nav-link {
+        color: #343a40;
+    }
+    .jumbotron {
+        background-color: #f8f9fa;
+        border-radius: 0;
+    }
+    .card {
+        border: none;
+        transition: all 0.3s;
+        height: 100%; /* Ensure cards fill the height of the row */
+    }
+    .card:hover {
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+    }
+    .card-img-top {
+        height: 200px; /* Set fixed height for the images */
+        object-fit: cover; /* Ensure images maintain aspect ratio */
+    }
+    .card-body {
+        height: calc(100% - 200px); /* Adjust card body height */
+        overflow: hidden; /* Hide overflow content */
+    }
+    .card-title {
+        font-size: 1.2rem; /* Adjust font size */
+        white-space: nowrap; /* Prevent line breaks */
+        overflow: hidden; /* Hide overflow text */
+        text-overflow: ellipsis; /* Show ellipsis for overflow text */
+    }
+    .card-text {
+        font-size: 1rem; /* Adjust font size */
+        white-space: nowrap; /* Prevent line breaks */
+        overflow: hidden; /* Hide overflow text */
+        text-overflow: ellipsis; /* Show ellipsis for overflow text */
+    }
+</style>
+{% endblock %}
 </head>
-<body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light navbar-custom">
-        <div class="container">
-            <a class="navbar-brand" href="#">Your Online Shop</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+{% block content %}
+<div class="container mt-5">
+    <div class="jumbotron">
+        <h1 class="display-4">Welcome to Your Online Shop</h1>
+        <p class="lead">Find everything you need in one place.</p>
+        <hr class="my-4">
+    </div>
 
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item active">
-                        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Products</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Contact</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main content -->
-    <div class="container mt-5">
-        <div class="jumbotron">
-            <h1 class="display-4">Welcome to Your Online Shop</h1>
-            <p class="lead">Find everything you need in one place.</p>
-            <hr class="my-4">
+    <div class="row">
+        <!-- Category Sidebar -->
+        <div class="col-md-3 mb-4">
+            <h2>Categories</h2>
+            <ul class="list-group" id="categories">
+                {% for category in categories %}
+                <a class="list-group-item category-item " data-category-id="{{ category.id }}">{{ category.name }}</a>
+                {% endfor %}
+            </ul>
         </div>
 
-        <div class="row">
-            <!-- Category Sidebar -->
-            <div class="col-md-3 mb-4">
-                <h2>Categories</h2>
-                <ul class="list-group">
-                    <li class="list-group-item">Category 1</li>
-                    <li class="list-group-item">Category 2</li>
-                    <li class="list-group-item">Category 3</li>
-                    <!-- Add more categories here -->
-                </ul>
-            </div>
 
-            <!-- Product Listings -->
-            <div class="col-md-9">
-                <h2 class="mb-4">All Products</h2>
-                <div class="row">
-                    <!-- Sample Product Cards -->
-                    <div class="col-md-4 mb-4">
-                        <div class="card">
-                            <img src="https://via.placeholder.com/350" class="card-img-top" alt="Sample Product">
-                            <div class="card-body">
-                                <h5 class="card-title">Sample Product 1</h5>
-                                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                                <a href="#" class="btn btn-primary">View Details</a>
-                            </div>
+        <!-- Product Listings -->
+        <div class="col-md-9">
+            <h2 class="mb-4">All Products</h2>
+            <div class="row products" id="products">
+                {% for product in products %}
+                <div class="col-md-4 mb-4 product-item" data-category-id="{{ product.category.id }}">
+                    <div class="card">
+                        {% if product.ProductImages.first %}
+                        <img src="{{ product.ProductImages.first.image.url }}" class="card-img-top" alt="{{ product.title }}">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.title }}</h5>
+                            <p class="card-text">Description: {{ product.description }}</p>
+                            <p class="card-text">Price: {{ product.price }}</p>
+                            <a href="{% url 'detail' product.id %}" class="btn btn-primary">View Details</a>
                         </div>
                     </div>
-                    <div class="col-md-4 mb-4">
-                        <div class="card">
-                            <img src="https://via.placeholder.com/350" class="card-img-top" alt="Sample Product">
-                            <div class="card-body">
-                                <h5 class="card-title">Sample Product 2</h5>
-                                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                                <a href="#" class="btn btn-primary">View Details</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-4">
-                        <div class="card">
-                            <img src="https://via.placeholder.com/350" class="card-img-top" alt="Sample Product">
-                            <div class="card-body">
-                                <h5 class="card-title">Sample Product 3</h5>
-                                <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                                <a href="#" class="btn btn-primary">View Details</a>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Add more sample product cards here -->
                 </div>
+                {% endfor %}
             </div>
         </div>
     </div>
+</div>
+{% endblock %}
 
-    <!-- Footer -->
-    <footer class="footer mt-auto py-3 bg-light">
-        <div class="container text-center">
-            <p>&copy; 2024 Your Online Shop</p>
-        </div>
-    </footer>
 
-    <!-- Bootstrap JS (Optional) -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
-</html>
+{% block script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const categoryItems = document.querySelectorAll('.category-item');
+        const productItems = document.querySelectorAll('.product-item');
+
+        categoryItems.forEach(category => {
+            category.addEventListener('click', function() {
+                const categoryId = this.getAttribute('data-category-id');
+                productItems.forEach(product => {
+                    const productCategoryId = product.getAttribute('data-category-id');
+                    if (categoryId === productCategoryId || categoryId === 'all') {
+                        product.style.display = 'block';
+                    } else {
+                        product.style.display = 'none';
+                    }
+                });
+            });
+        });
+    });
+// <!--   function fetchData() {-->
+// <!--        // Fetch categories-->
+// <!--        fetch('http://127.0.0.1:8000/product/categoriesapi/')-->
+// <!--            .then(response => response.json())-->
+// <!--            .then(data => {-->
+// <!--                // Call a function to display categories-->
+// <!--                displayCategories(data);-->
+// <!--            })-->
+// <!--            .catch(error => {-->
+// <!--                console.error('Error fetching categories:', error);-->
+// <!--            });-->
+//
+// <!--        // Fetch products-->
+// <!--        fetch('http://127.0.0.1:8000/product/productsapi/')-->
+// <!--            .then(response => response.json())-->
+// <!--            .then(data => {-->
+// <!--                // Call a function to display products-->
+// <!--                displayProducts(data);-->
+// <!--            })-->
+// <!--            .catch(error => {-->
+// <!--                console.error('Error fetching products:', error);-->
+// <!--            });-->
+//
+// <!--        // Fetch product images-->
+// <!--        fetch('http://127.0.0.1:8000/product/image/')-->
+// <!--            .then(response => response.json())-->
+// <!--            .then(data => {-->
+// <!--                // Call a function to display product images-->
+// <!--                displayImages(data);-->
+// <!--                console.log(data)-->
+// <!--            })-->
+// <!--            .catch(error => {-->
+// <!--                console.error('Error fetching images:', error);-->
+// <!--            });-->
+// <!--    }-->
+//
+// <!--    function displayCategories(categories) {-->
+// <!--        const categoriesList = document.getElementById('categories');-->
+//
+// <!--        categories.forEach(category => {-->
+// <!--            const categoryItem = document.createElement('li');-->
+// <!--            categoryItem.classList.add('list-group-item');-->
+// <!--            categoryItem.textContent = category.name;-->
+// <!--            categoriesList.appendChild(categoryItem);-->
+// <!--        });-->
+// <!--    }-->
+//
+// <!--    function displayProducts(products) {-->
+// <!--        const productsContainer = document.getElementById('products');-->
+//
+// <!--        products.forEach(product => {-->
+// <!--            const productCard = document.createElement('div');-->
+// <!--            productCard.classList.add('col-md-4', 'mb-4');-->
+//
+// <!--            // Set data-product-id attribute-->
+// <!--            productCard.setAttribute('data-product-id', product.id);-->
+//
+// <!--            const cardContent = `-->
+// <!--                <div class="card">-->
+// <!--                    <img src="" class="card-img-top" alt="${product.title}">-->
+// <!--                    <div class="card-body">-->
+// <!--                        <h5 class="card-title">${product.title}</h5>-->
+// <!--                        <p class="card-text">Price: ${product.price}</p>-->
+// <!--                        <a href="#" class="btn btn-primary">View Details</a>-->
+// <!--                    </div>-->
+// <!--                </div>-->
+// <!--            `;-->
+// <!--            productCard.innerHTML = cardContent;-->
+//
+// <!--            productsContainer.appendChild(productCard);-->
+// <!--        });-->
+// <!--    }-->
+//
+// <!--    function displayImages(images) {-->
+// <!--        // Create a mapping object for product IDs and image URLs-->
+// <!--        const imageMap = {};-->
+// <!--        images.forEach(image => {-->
+// <!--            // Assuming the structure of the new API response matches the previous one-->
+// <!--            imageMap[image.product.id] = image.image;-->
+// <!--        });-->
+//
+// <!--        // Iterate over product cards and update image URLs-->
+// <!--        const productCards = document.querySelectorAll('.card');-->
+// <!--        productCards.forEach(card => {-->
+// <!--            const productId = card.getAttribute('data-product-id');-->
+// <!--            if (productId && imageMap[productId]) {-->
+// <!--                const imgElement = card.querySelector('.card-img-top');-->
+// <!--                imgElement.src = imageMap[productId];-->
+// <!--            }-->
+// <!--        });-->
+// <!--    }-->
+//
+// <!--    window.addEventListener('load', fetchData);-->
+</script>
+{% endblock %}
