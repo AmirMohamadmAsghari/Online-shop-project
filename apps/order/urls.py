@@ -1,11 +1,13 @@
 from django.urls import path
-from .views import OrderItemCreate, OrderAPIView, AddressAPIView, AddToCartView, view_orders, CheckOutView
+from .views import OrderItemCreate, OrderAPIView, AddressAPIView, AddToCartView, CheckOutView, OrderView, PaymentInitiateView, PaymentSuccessView
 
 urlpatterns = [
     path('orderitem', OrderItemCreate.as_view(), name='orderitem'),
     path('order',OrderAPIView.as_view(), name='order'),
     path('address', AddressAPIView.as_view(), name='address'),
     path('add-to-cart/', AddToCartView.as_view(), name='add-to-cart'),
-    path('view-order', view_orders, name='view-order'),
+    path('view-order/', OrderView.as_view(), name='view-order'),
     path('checkout/', CheckOutView.as_view(), name='checkout'),
+    path('payment/<int:order_id>/initiate', PaymentInitiateView.as_view(), name='payment-initiate'),
+    path('payment/<int:payment_id>/success/', PaymentSuccessView.as_view(), name='payment-success'),
 ]
