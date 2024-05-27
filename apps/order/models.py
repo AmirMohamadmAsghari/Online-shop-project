@@ -22,6 +22,9 @@ class Order(TimeStampedMixin, LogicalMixin):
         verbose_name = "Order"
         verbose_name_plural = "Orders"
         ordering = ['-created']
+        constraints = [
+            models.UniqueConstraint(fields=['customer'], condition=models.Q(status='open'), name='unique_open_order_per_customer')
+        ]
 
     def __str__(self):
         return f"Order {self.id} by {self.customer}"
@@ -42,5 +45,6 @@ class Payment(TimeStampedMixin):
     order = models.ForeignKey('Order', on_delete=models.CASCADE, related_name='OrderPayment')
     payment_type = models.CharField(max_length=255)
     transaction_id = models.IntegerField()
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
 
 
