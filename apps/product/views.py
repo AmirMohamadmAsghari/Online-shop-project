@@ -3,9 +3,9 @@ from django.shortcuts import render, get_object_or_404
 from django.views import View
 from .models import Category, Product, Image, Review
 from .serializers import ProductSerializer, CategorySerializer, ImageSerializer
-from rest_framework import generics, response, permissions
+from rest_framework import generics, response, permissions, views
 from django.contrib.auth import get_user_model
-
+from .tasks import my_task
 
 # Create your views here.
 
@@ -15,9 +15,10 @@ class ProductView(View):
 
     def get(self, request):
         products = Product.objects.all()
-        images = Image.objects.all()
+        my_task(3, 5)
+        # images = Image.objects.all()
         categories = Category.objects.all()
-        return render(request, self.template_name, {'products': products, 'images': images, 'categories': categories})
+        return render(request, self.template_name, {'products': products, 'categories': categories})
 
 
 class ProductDetailView(View):
@@ -30,6 +31,9 @@ class ProductDetailView(View):
         discounted_price = product.price - product.discount.amount if product.discount else None
         return render(request, self.template_name, {'product': product, 'images':images, 'review': review, 'discounted_price': discounted_price})
 
+
+def custom_404_view(request,exception):
+    return render(request,'404.html',status=404)
 # =====================API_View=====================
 
 
