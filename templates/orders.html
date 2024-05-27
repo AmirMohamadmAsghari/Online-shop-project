@@ -69,6 +69,23 @@
         flex: 1;
         max-width: calc(50% - 20px);
     }
+    .btn {
+        display: inline-block;
+        padding: 8px 16px;
+        background-color: #007bff;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+        border: none;
+        cursor: pointer;
+    }
+    .btn:hover {
+        background-color: #0056b3;
+    }
+    .btn-add {
+        margin-top: 20px;
+    }
 </style>
 {% endblock %}
 {% block content %}
@@ -84,14 +101,14 @@
                 <!-- Display products in a flex container with wrap -->
                 <div class="cart-items-container">
                     <!-- Iterate over each product in the order -->
+                    {% load custom_filters %}
                     {% for product in products %}
                         <div class="cart-item column">
-                            {% for image in images %}
-                                {% if image.product_id == product.product.id %}
-                                <img src="{{ image.image.url }}" alt="{{ product.product.title }}">
-
+                            {% with image=images|dict_key:product.product.id %}
+                                {% if image %}
+                                    <img src="{{ image.image.url }}" alt="{{ product.product.title }}">
                                 {% endif %}
-                            {% endfor %}
+                            {% endwith %}
                             <div class="cart-item-details">
                                 <h3>{{ product.product.title }}</h3>
                                 <p>{{ product.product.description }}</p>
@@ -114,6 +131,7 @@
         <h2>Total</h2>
         <p>Total items: {{ total_items }}</p>
         <p>Total price: ${{ total_price }}</p>
+        <a href="{% url 'address-list' %}" class="btn btn-add">Select Address</a>
         <!-- Checkout button -->
         <a href="{% url 'checkout' %}" class="checkout-button">Proceed to Checkout</a>
     </div>
