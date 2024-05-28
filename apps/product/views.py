@@ -7,6 +7,7 @@ from rest_framework import generics, response, permissions, views
 from django.contrib.auth import get_user_model
 from .tasks import my_task
 
+
 # Create your views here.
 
 
@@ -14,11 +15,28 @@ class ProductView(View):
     template_name = 'products.html'
 
     def get(self, request):
-        products = Product.objects.all()
-        my_task(3, 5)
-        # images = Image.objects.all()
-        categories = Category.objects.all()
-        return render(request, self.template_name, {'products': products, 'categories': categories})
+        products = Product.objects.filter(stock__gt=0)
+        parent_categories = Category.objects.filter(parent_category__isnull=True)
+        return render(request, self.template_name, {'products': products, 'categories': parent_categories, 'all_products': True})
+
+
+class CategoryProductView(View):
+    template_name = 'products.html'
+
+    def get(self, request, category_id):
+        category = get_object_or_404(Category, id=category_id)
+        child_categories = Category.objects.filter(parent_category=category)
+        products = Product.objects.filter(
+            category__in=list(child_categories) + [category],
+            stock__gt=0
+        )
+        parent_categories = Category.objects.filter(parent_category__isnull=True)
+        return render(request, self.template_name, {
+            'products': products,
+            'categories': parent_categories,
+            'selected_category': category,
+            'child_categories': child_categories
+        })
 
 
 class ProductDetailView(View):
@@ -29,11 +47,14 @@ class ProductDetailView(View):
         images = Image.objects.filter(product_id=product.id)
         review = Review.objects.filter(product_id=product.id)
         discounted_price = product.price - product.discount.amount if product.discount else None
-        return render(request, self.template_name, {'product': product, 'images':images, 'review': review, 'discounted_price': discounted_price})
+        return render(request, self.template_name,
+                      {'product': product, 'images': images, 'review': review, 'discounted_price': discounted_price})
 
 
-def custom_404_view(request,exception):
-    return render(request,'404.html',status=404)
+def custom_404_view(request, exception):
+    return render(request, '404.html', status=404)
+
+
 # =====================API_View=====================
 
 
@@ -56,6 +77,9 @@ class ReviewsAPIView(View):
     def get(self, request, product_id):
         print("Fetching reviews for product with ID:", product_id)
         # Fetch reviews and related customer user information
-        reviews = Review.objects.filter(product_id=product_id).select_related('customer').values('rating', 'review_Text', 'customer__username', 'created')
+        reviews = Review.objects.filter(product_id=product_id).select_related('customer').values('rating',
+                                                                                                 'review_Text',
+                                                                                                 'customer__username',
+                                                                                                 'created')
         print("Fetched reviews:", reviews)
         return JsonResponse(list(reviews), safe=False)
