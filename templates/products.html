@@ -1,6 +1,6 @@
-<!-- Inside your products.html template -->
+<!-- templates/products.html -->
 {% extends 'base.html' %}
-{% block title%}Product{% endblock %}
+{% block title %}Products{% endblock %}
 {% block style %}
 <style>
     body {
@@ -23,34 +23,37 @@
     .card {
         border: none;
         transition: all 0.3s;
-        height: 100%; /* Ensure cards fill the height of the row */
+        height: 100%;
     }
     .card:hover {
         box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
     }
     .card-img-top {
-        height: 200px; /* Set fixed height for the images */
-        object-fit: cover; /* Ensure images maintain aspect ratio */
+        height: 200px;
+        object-fit: cover;
     }
     .card-body {
-        height: calc(100% - 200px); /* Adjust card body height */
-        overflow: hidden; /* Hide overflow content */
+        height: calc(100% - 200px);
+        overflow: hidden;
     }
     .card-title {
-        font-size: 1.2rem; /* Adjust font size */
-        white-space: nowrap; /* Prevent line breaks */
-        overflow: hidden; /* Hide overflow text */
-        text-overflow: ellipsis; /* Show ellipsis for overflow text */
+        font-size: 1.2rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     .card-text {
-        font-size: 1rem; /* Adjust font size */
-        white-space: nowrap; /* Prevent line breaks */
-        overflow: hidden; /* Hide overflow text */
-        text-overflow: ellipsis; /* Show ellipsis for overflow text */
+        font-size: 1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .out-of-stock {
+        color: red;
+        font-weight: bold;
     }
 </style>
 {% endblock %}
-</head>
 {% block content %}
 <div class="container mt-5">
     <div class="jumbotron">
@@ -64,19 +67,27 @@
         <div class="col-md-3 mb-4">
             <h2>Categories</h2>
             <ul class="list-group" id="categories">
+                <a href="{% url 'products' %}" class="list-group-item category-item {% if all_products %}active{% endif %}">All Products</a>
                 {% for category in categories %}
-                <a class="list-group-item category-item " data-category-id="{{ category.id }}">{{ category.name }}</a>
+                    <a href="{% url 'category-products' category.id %}" class="list-group-item category-item {% if selected_category and selected_category.id == category.id %}active{% endif %}">{{ category.name }}</a>
                 {% endfor %}
             </ul>
+            {% if child_categories %}
+            <h2>Subcategories</h2>
+            <ul class="list-group" id="subcategories">
+                {% for child_category in child_categories %}
+                    <a href="{% url 'category-products' child_category.id %}" class="list-group-item category-item {% if selected_category and selected_category.id == child_category.id %}active{% endif %}">{{ child_category.name }}</a>
+                {% endfor %}
+            </ul>
+            {% endif %}
         </div>
-
 
         <!-- Product Listings -->
         <div class="col-md-9">
-            <h2 class="mb-4">All Products</h2>
+            <h2 class="mb-4">{% if selected_category %}{{ selected_category.name }}{% else %}All Products{% endif %}</h2>
             <div class="row products" id="products">
                 {% for product in products %}
-                <div class="col-md-4 mb-4 product-item" data-category-id="{{ product.category.id }}">
+                <div class="col-md-4 mb-4 product-item">
                     <div class="card">
                         {% if product.ProductImages.first %}
                         <img src="{{ product.ProductImages.first.image.url }}" class="card-img-top" alt="{{ product.title }}">
@@ -85,7 +96,11 @@
                             <h5 class="card-title">{{ product.title }}</h5>
                             <p class="card-text">Description: {{ product.description }}</p>
                             <p class="card-text">Price: {{ product.price }}</p>
+                            {% if product.stock > 0 %}
                             <a href="{% url 'detail' product.id %}" class="btn btn-primary">View Details</a>
+                            {% else %}
+                            <p class="out-of-stock">Out of Stock</p>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -95,7 +110,6 @@
     </div>
 </div>
 {% endblock %}
-
 
 {% block script %}
 <script>
@@ -117,98 +131,5 @@
             });
         });
     });
-// <!--   function fetchData() {-->
-// <!--        // Fetch categories-->
-// <!--        fetch('http://127.0.0.1:8000/product/categoriesapi/')-->
-// <!--            .then(response => response.json())-->
-// <!--            .then(data => {-->
-// <!--                // Call a function to display categories-->
-// <!--                displayCategories(data);-->
-// <!--            })-->
-// <!--            .catch(error => {-->
-// <!--                console.error('Error fetching categories:', error);-->
-// <!--            });-->
-//
-// <!--        // Fetch products-->
-// <!--        fetch('http://127.0.0.1:8000/product/productsapi/')-->
-// <!--            .then(response => response.json())-->
-// <!--            .then(data => {-->
-// <!--                // Call a function to display products-->
-// <!--                displayProducts(data);-->
-// <!--            })-->
-// <!--            .catch(error => {-->
-// <!--                console.error('Error fetching products:', error);-->
-// <!--            });-->
-//
-// <!--        // Fetch product images-->
-// <!--        fetch('http://127.0.0.1:8000/product/image/')-->
-// <!--            .then(response => response.json())-->
-// <!--            .then(data => {-->
-// <!--                // Call a function to display product images-->
-// <!--                displayImages(data);-->
-// <!--                console.log(data)-->
-// <!--            })-->
-// <!--            .catch(error => {-->
-// <!--                console.error('Error fetching images:', error);-->
-// <!--            });-->
-// <!--    }-->
-//
-// <!--    function displayCategories(categories) {-->
-// <!--        const categoriesList = document.getElementById('categories');-->
-//
-// <!--        categories.forEach(category => {-->
-// <!--            const categoryItem = document.createElement('li');-->
-// <!--            categoryItem.classList.add('list-group-item');-->
-// <!--            categoryItem.textContent = category.name;-->
-// <!--            categoriesList.appendChild(categoryItem);-->
-// <!--        });-->
-// <!--    }-->
-//
-// <!--    function displayProducts(products) {-->
-// <!--        const productsContainer = document.getElementById('products');-->
-//
-// <!--        products.forEach(product => {-->
-// <!--            const productCard = document.createElement('div');-->
-// <!--            productCard.classList.add('col-md-4', 'mb-4');-->
-//
-// <!--            // Set data-product-id attribute-->
-// <!--            productCard.setAttribute('data-product-id', product.id);-->
-//
-// <!--            const cardContent = `-->
-// <!--                <div class="card">-->
-// <!--                    <img src="" class="card-img-top" alt="${product.title}">-->
-// <!--                    <div class="card-body">-->
-// <!--                        <h5 class="card-title">${product.title}</h5>-->
-// <!--                        <p class="card-text">Price: ${product.price}</p>-->
-// <!--                        <a href="#" class="btn btn-primary">View Details</a>-->
-// <!--                    </div>-->
-// <!--                </div>-->
-// <!--            `;-->
-// <!--            productCard.innerHTML = cardContent;-->
-//
-// <!--            productsContainer.appendChild(productCard);-->
-// <!--        });-->
-// <!--    }-->
-//
-// <!--    function displayImages(images) {-->
-// <!--        // Create a mapping object for product IDs and image URLs-->
-// <!--        const imageMap = {};-->
-// <!--        images.forEach(image => {-->
-// <!--            // Assuming the structure of the new API response matches the previous one-->
-// <!--            imageMap[image.product.id] = image.image;-->
-// <!--        });-->
-//
-// <!--        // Iterate over product cards and update image URLs-->
-// <!--        const productCards = document.querySelectorAll('.card');-->
-// <!--        productCards.forEach(card => {-->
-// <!--            const productId = card.getAttribute('data-product-id');-->
-// <!--            if (productId && imageMap[productId]) {-->
-// <!--                const imgElement = card.querySelector('.card-img-top');-->
-// <!--                imgElement.src = imageMap[productId];-->
-// <!--            }-->
-// <!--        });-->
-// <!--    }-->
-//
-// <!--    window.addEventListener('load', fetchData);-->
 </script>
 {% endblock %}
