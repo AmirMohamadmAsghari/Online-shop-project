@@ -1,0 +1,66 @@
+<!-- templates/payment_initiate.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Payment for Order #{{ order.id }}</h2>
+    <form method="post" action="{% url 'payment-initiate' order.id %}">
+        {% csrf_token %}
+        <label for="payment_type">Payment Type:</label>
+        <select id="payment_type" name="payment_type" required>
+            <option value="Credit Card">Credit Card</option>
+            <option value="PayPal">PayPal</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+            <!-- Add more payment types as needed -->
+        </select>
+
+        <label for="transaction_id">Transaction ID:</label>
+        <input type="text" id="transaction_id" name="transaction_id" required>
+
+        <button type="submit" class="btn">Proceed to Payment</button>
+    </form>
+</div>
+
+<style>
+    .container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+        text-align: center;
+        color: #333;
+    }
+    label {
+        display: block;
+        margin-top: 10px;
+        color: #555;
+    }
+    input, select {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+    }
+    .btn {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        background-color: #007bff;
+        color: #fff;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        margin-top: 20px;
+    }
+    .btn:hover {
+        background-color: #0056b3;
+    }
+</style>
+{% endblock %}
