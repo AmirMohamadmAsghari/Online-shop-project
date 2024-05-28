@@ -1,0 +1,104 @@
+<!-- templates/user_profile.html -->
+{% extends 'base.html' %}
+{% block style %}
+<style>
+    /*.container {*/
+    /*    max-width: 800px;*/
+    /*    margin: 50px auto;*/
+    /*    padding: 20px;*/
+    /*    background-color: #fff;*/
+    /*    border-radius: 8px;*/
+    /*    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);*/
+    /*}*/
+    h1 {
+        text-align: center;
+        color: #333;
+    }
+    .profile-section {
+        margin-bottom: 30px;
+    }
+    .profile-section h2 {
+        font-size: 1.5em;
+        color: #555;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    .address-list, .order-list {
+        list-style: none;
+        padding: 0;
+    }
+    .address-item, .order-item {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .address-info, .order-info {
+        flex: 1;
+    }
+    .address-actions {
+        margin-left: 10px;
+    }
+    .btn {
+        display: inline-block;
+        padding: 8px 16px;
+        background-color: #007bff;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+        border: none;
+        cursor: pointer;
+    }
+    .btn:hover {
+        background-color: #0056b3;
+    }
+    .btn-add {
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <h1>User Profile</h1>
+
+    <div class="profile-section">
+        <h2>Addresses</h2>
+        <ul class="address-list">
+            {% for address in addresses %}
+            <li class="address-item">
+                <div class="address-info">
+                    <strong>{{ address.name }}</strong> - {{ address.city }}, {{ address.province }}
+                </div>
+                <div class="address-actions">
+                    <form method="post" action="{% url 'address-select' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="address_id" value="{{ address.id }}">
+                        <button type="submit" class="btn">Select</button>
+                    </form>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        <a href="{% url 'address-create' %}" class="btn btn-add">Add New Address</a>
+        <a href="{% url 'address-list' %}" class="btn btn-add">Edite All Addresses</a>
+    </div>
+
+    <div class="profile-section">
+        <h2>Orders</h2>
+        <ul class="order-list">
+            {% for order in orders %}
+            <li class="order-item">
+                <div class="order-info">
+                    <strong>Order ID:</strong> {{ order.id }} - <strong>Status:</strong> {{ order.status }}
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+
+{% endblock %}
