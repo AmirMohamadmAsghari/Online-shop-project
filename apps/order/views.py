@@ -177,10 +177,11 @@ class CheckOutView(LoginRequiredMixin, View):
     def get(self, request):
         if request.user.is_authenticated:
             cart_id = request.session.get('cart_id')
+            user_order, created = Order.objects.get_or_create(customer=request.user, status='open')
             if cart_id:
                 try:
                     cart_order = Order.objects.get(id=cart_id, status='open')
-                    user_order, created = Order.objects.get_or_create(customer=request.user, status='open')
+                    # user_order, created = Order.objects.get_or_create(customer=request.user, status='open')
 
                     for item in OrderItem.objects.filter(order=cart_order):
                         item.order = user_order
@@ -200,7 +201,7 @@ class CheckOutView(LoginRequiredMixin, View):
 class PaymentInitiateView(LoginRequiredMixin, View):
     def get(self, request, order_id):
         order = get_object_or_404(Order, id=order_id, customer=request.user, status='open')
-        return render(request, 'payment-initiate.html', {'order': order})
+        return render(request, 'payment_initiate.html', {'order': order})
 
     def post(self, request, order_id):
         order = get_object_or_404(Order, id=order_id,customer=request.user, status='open')
@@ -222,4 +223,16 @@ class PaymentInitiateView(LoginRequiredMixin, View):
 
 
 class PaymentSuccessView(LoginRequiredMixin, View):
-    pass
+    def get(self, request, payment_id):
+        payment = get_object_or_404(Payment, id=payment_id, order__customer=request.user)
+        order = payment.order
+        order.status = 'success'
+        order.save()
+
+        order_item = OrderItem.objects.filter(order=order)
+        for item in order_item:
+            product = item.product
+            product.stock -= item.quantity
+            product.sales_number += item.quantity
+            product.save()
+        return render(request, 'payment_success.html', {'payment': payment})
