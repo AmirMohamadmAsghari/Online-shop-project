@@ -1,0 +1,86 @@
+<!-- templates/address_list.html -->
+{% extends 'base.html' %}
+{% block style %}
+<style>
+    /*.container {*/
+    /*    max-width: 800px;*/
+    /*    margin: 50px auto;*/
+    /*    padding: 20px;*/
+    /*    background-color: #fff;*/
+    /*    border-radius: 8px;*/
+    /*    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);*/
+    /*}*/
+    h1 {
+        text-align: center;
+        color: #333;
+    }
+    .address-list {
+        list-style-type: none;
+        padding: 0;
+    }
+    .address-item {
+        background-color: #f9f9f9;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+    }
+    .address-actions {
+        margin-top: 10px;
+    }
+    .btn {
+        display: inline-block;
+        padding: 8px 15px;
+        background-color: #007bff;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        margin-right: 5px;
+    }
+    .btn:hover {
+        background-color: #0056b3;
+    }
+    .btn-add {
+        display: block;
+        width: fit-content;
+        margin: 20px auto 0;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <h1>Your Addresses</h1>
+
+    {% if addresses %}
+        <ul class="address-list">
+            {% for address in addresses %}
+                <li class="address-item">
+                    <strong>{{ address.name }}</strong><br>
+                    {{ address.detail_address }}<br>
+                    {{ address.city }}, {{ address.province }}<br>
+                    Postal Code: {{ address.postal_code }}<br>
+                    Description: {{ address.description }}<br>
+                    <div class="address-actions">
+                        <form method="post" action="{% url 'address-select' %}" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="address_id" value="{{ address.id }}">
+                            <button type="submit" class="btn">Select</button>
+                        </form>
+                        <a href="{% url 'address-edit' address.id %}" class="btn">Edit</a>
+                        <form method="post" action="{% url 'address-delete' address.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn">Delete</button>
+                        </form>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You have no addresses saved.</p>
+    {% endif %}
+
+    <a href="{% url 'address-create' %}" class="btn btn-add">Add New Address</a>
+</div>
+{% endblock %}
