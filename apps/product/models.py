@@ -1,12 +1,12 @@
 from django.db import models
 from apps.user.models import CustomUser
 from apps.core.models import TimeStampedMixin, LogicalMixin
-
+from django.conf import settings
 # Create your models here.
 
 
 class Product(TimeStampedMixin, LogicalMixin):
-    seller = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='SellerProducts')
+    seller = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='SellerProducts')
     title = models.CharField(max_length=255)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
