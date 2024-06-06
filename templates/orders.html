@@ -114,6 +114,7 @@
                                 <p>{{ product.product.description }}</p>
                                 <p class="cart-item-price">Price: ${{ product.total_price }}</p>
                                 <p>Quantity: {{ product.quantity }}</p>
+                                <button class="btn btn-danger delete-order-item" data-id="{{ product.id }}">Delete</button>
                             </div>
                         </div>
                     {% endfor %}
@@ -137,3 +138,41 @@
     </div>
 </div>
 {% endblock %}
+{% block script %}
+<script>
+   document.addEventListener('DOMContentLoaded', function() {
+    const deleteButtons = document.querySelectorAll('.delete-order-item');
+
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.getAttribute('data-id');
+
+            fetch(`/order/api/order-item/${itemId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token'), // Adjust if you're using a different auth mechanism
+                }
+            })
+            .then(response => {
+                if (response.status === 204) {
+                    // Remove the item row from the DOM
+                    const itemRow = this.closest('.cart-item');
+                    if (itemRow) {
+                        itemRow.remove();
+                    }
+                } else {
+                    alert('You have not authenticated')
+                    response.text().then(text => console.error('Failed to delete the order item:', text));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}
+
