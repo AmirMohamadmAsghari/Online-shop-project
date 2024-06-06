@@ -1,28 +1,72 @@
-<!-- templates/user_profile.html -->
 {% extends 'base.html' %}
+{% block title %}User Profile{% endblock %}
 {% block style %}
 <style>
     /*.container {*/
     /*    max-width: 800px;*/
-    /*    margin: 50px auto;*/
+    /*    margin: auto;*/
     /*    padding: 20px;*/
-    /*    background-color: #fff;*/
-    /*    border-radius: 8px;*/
-    /*    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);*/
     /*}*/
     h1 {
         text-align: center;
         color: #333;
+        margin-bottom: 30px;
     }
     .profile-section {
         margin-bottom: 30px;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f9f9f9;
     }
     .profile-section h2 {
         font-size: 1.5em;
-        color: #555;
+        color: #007bff;
         border-bottom: 2px solid #007bff;
         padding-bottom: 10px;
         margin-bottom: 20px;
+    }
+    .profile-section form {
+        display: flex;
+        flex-direction: column;
+    }
+    .profile-section form .form-group {
+        margin-bottom: 15px;
+    }
+    .profile-section form .form-group label {
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    .profile-section form .form-group input,
+    .profile-section form .form-group select,
+    .profile-section form .form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    .btn {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        text-align: center;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    .btn:hover {
+        background-color: #0056b3;
+    }
+    .btn-primary {
+        background-color: #007bff;
+    }
+    .btn-add {
+        margin-top: 20px;
+        background-color: #28a745;
+    }
+    .btn-add:hover {
+        background-color: #218838;
     }
     .address-list, .order-list {
         list-style: none;
@@ -41,28 +85,35 @@
     .address-actions {
         margin-left: 10px;
     }
-    .btn {
-        display: inline-block;
-        padding: 8px 16px;
-        background-color: #007bff;
-        color: #fff;
-        text-decoration: none;
-        border-radius: 5px;
-        transition: background-color 0.3s;
-        border: none;
-        cursor: pointer;
+    .address-actions .btn {
+        background-color: #ffc107;
     }
-    .btn:hover {
-        background-color: #0056b3;
-    }
-    .btn-add {
-        margin-top: 20px;
+    .address-actions .btn:hover {
+        background-color: #e0a800;
     }
 </style>
 {% endblock %}
 {% block content %}
-<div class="container">
+<div class="container mt-5">
     <h1>User Profile</h1>
+
+    <div class="profile-section">
+        <h2>Profile Information</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ profile_form.as_p }}
+            <button type="submit" name="update_profile" class="btn btn-primary">Update Profile</button>
+        </form>
+    </div>
+
+    <div class="profile-section">
+        <h2>Change Password</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ password_form.as_p }}
+            <button type="submit" name="change_password" class="btn btn-primary">Change Password</button>
+        </form>
+    </div>
 
     <div class="profile-section">
         <h2>Addresses</h2>
@@ -76,14 +127,14 @@
                     <form method="post" action="{% url 'address-select' %}">
                         {% csrf_token %}
                         <input type="hidden" name="address_id" value="{{ address.id }}">
-                        <button type="submit" class="btn">Select</button>
+                        <button type="submit" class="btn btn-primary">Select</button>
                     </form>
                 </div>
             </li>
             {% endfor %}
         </ul>
-        <a href="{% url 'address-create' %}" class="btn btn-add">Add New Address</a>
-        <a href="{% url 'address-list' %}" class="btn btn-add">Edite All Addresses</a>
+        <a href="{% url 'address-create' %}" class="btn btn-primary">Add New Address</a>
+        <a href="{% url 'address-list' %}" class="btn btn-primary">Edit All Addresses</a>
     </div>
 
     <div class="profile-section">
@@ -99,6 +150,4 @@
         </ul>
     </div>
 </div>
-
-
 {% endblock %}
