@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.db import transaction
 from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from .models import OrderItem, Order, Address, Payment
@@ -175,27 +176,24 @@ class AddressAPIView(generics.ListCreateAPIView):
 
 class CheckOutView(LoginRequiredMixin, View):
     def get(self, request):
-        if request.user.is_authenticated:
-            cart_id = request.session.get('cart_id')
-            user_order, created = Order.objects.get_or_create(customer=request.user, status='open')
-            if cart_id:
-                try:
-                    cart_order = Order.objects.get(id=cart_id, status='open')
-                    # user_order, created = Order.objects.get_or_create(customer=request.user, status='open')
+        cart_id = request.session.get('cart_id')
+        user_order, created = Order.objects.get_or_create(customer=request.user, status='open')
 
-                    for item in OrderItem.objects.filter(order=cart_order):
-                        item.order = user_order
-                        item.save()
+        if cart_id:
+            try:
+                cart_order = Order.objects.get(id=cart_id, status='open')
+                self._merge_cart_order_items(cart_order, user_order)
+                cart_order.delete()
+                del request.session['cart_id']
+            except Order.DoesNotExist:
+                pass
 
-                    cart_order.delete()
-                    del request.session['cart_id']
-                except Order.DoesNotExist:
-                    pass
+        return redirect('payment-initiate', order_id=user_order.id)
 
-            return redirect('payment-initiate', order_id=user_order.id)
-        else:
-            login_url = reverse('login')
-            return redirect(login_url)
+    def _merge_cart_order_items(self, cart_order, user_order):
+        for item in OrderItem.objects.filter(order=cart_order):
+            item.order = user_order
+            item.save()
 
 
 class PaymentInitiateView(LoginRequiredMixin, View):
@@ -236,3 +234,19 @@ class PaymentSuccessView(LoginRequiredMixin, View):
             product.sales_number += item.quantity
             product.save()
         return render(request, 'payment_success.html', {'payment': payment})
+
+
+class OrderItemDeleteView(generics.DestroyAPIView):
+    queryset = OrderItem.objects.all()
+    serializer_class = OrderItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        item = get_object_or_404(OrderItem, pk=kwargs['pk'])
+        order = item.order
+
+        if order.customer != request.user:
+            return Response({"detail": "Not authorized."}, status=status.HTTP_403_FORBIDDEN)
+
+        self.perform_destroy(item)
+        return Response(status=status.HTTP_204_NO_CONTENT)
