@@ -1,21 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reviews | Your Online Shop</title>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <!-- Custom CSS -->
-    <style>
-        /* Add custom styles here */
-    </style>
-</head>
+{% extends 'base.html' %}
+{% block title%}Reviews{% endblock %}
+    {% block style %}
+    {% endblock %}
 <body>
-    <!-- Navbar -->
-    {% include 'navbar.html' %}
-
-    <!-- Main content -->
+{% block content %}
     <div class="container">
         <h2>Product Reviews</h2>
         <!-- Reviews section -->
@@ -33,15 +21,4 @@
             <!-- Add more review cards here -->
         </div>
     </div>
-
-    <!-- Footer -->
-    <footer class="footer mt-auto py-3 bg-light">
-        <div class="container">
-            <p>&copy; 2024 Your Online Shop</p>
-        </div>
-    </footer>
-
-    <!-- Bootstrap JS (Optional) -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
-</html>
+{% endblock %}
