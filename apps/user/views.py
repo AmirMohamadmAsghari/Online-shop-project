@@ -4,11 +4,12 @@ from .models import CustomUser, Address
 from apps.order.models import Order
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.views import View
 from .validators import validate_password_strength
+from .forms import UserProfileForm, CustomPasswordChangeForm
 from .utils import generate_otp, send_otp_email, store_otp_in_redis
 import redis
 from django.urls import reverse
@@ -65,6 +66,7 @@ class Email_Verification(View):
     def get(self, request):
         email = request.session.get('email')
         otp_code = generate_otp(email)
+        store_otp_in_redis(otp_code,email)
         send_otp_email(email, otp_code)
         return render(request, self.template_name)
 
@@ -259,11 +261,40 @@ class AddressDeleteView(LoginRequiredMixin, View):
         return redirect('address-list')
 
 
-
-
-
 class UserProfileView(LoginRequiredMixin, View):
     def get(self, request):
-        addresses = Address.objects.filter(user=request.user)
-        orders = Order.objects.filter(customer=request.user)
-        return render(request, 'user_profile.html', {'addresses': addresses, 'orders': orders})
+        user = request.user
+        addresses = Address.objects.filter(user=user)  # Fetching the addresses using the correct related name
+        orders = Order.objects.filter(customer=user)  # Assuming there is an Order model related to the user
+        profile_form = UserProfileForm(instance=user)
+        password_form = CustomPasswordChangeForm(user=user)
+
+        return render(request, 'user_profile.html', {
+            'profile_form': profile_form,
+            'password_form': password_form,
+            'addresses': addresses,
+            'orders': orders
+        })
+
+    def post(self, request):
+        user = request.user
+        profile_form = UserProfileForm(request.POST, instance=user)
+        password_form = CustomPasswordChangeForm(user=user, data=request.POST)
+
+        if 'update_profile' in request.POST and profile_form.is_valid():
+            profile_form.save()
+            messages.success(request, 'Your profile was successfully updated!')
+            return redirect('profile')
+
+        if 'change_password' in request.POST and password_form.is_valid():
+            user = password_form.save()
+            update_session_auth_hash(request, user)  # Important to keep the user logged in
+            messages.success(request, 'Your password was successfully updated!')
+            return redirect('profile')
+
+        return render(request, 'user_profile.html', {
+            'profile_form': profile_form,
+            'password_form': password_form,
+            'addresses': user.CustomerAddress.all(),
+            'orders': Order.objects.filter(customer=user)
+        })
