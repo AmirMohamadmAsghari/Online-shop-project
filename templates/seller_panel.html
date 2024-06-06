@@ -1,0 +1,97 @@
+<!-- seller_panel.html -->
+{% extends 'base.html' %}
+{% block title %}Seller Panel{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h1>Seller Panel</h1>
+    <h2>Sales Overview</h2>
+
+    <form method="get" action=".">
+        <div class="form-group">
+            <label for="start_date">Start Date</label>
+            <input type="datetime-local" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d\TH:i' }}" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="end_date">End Date</label>
+            <input type="datetime-local" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d\TH:i' }}" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </form>
+    <a href="{% url 'product-create' %}" class="btn btn-info">Add</a>
+    <table class="table table-striped mt-3">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Number of Sales</th>
+                <th>Total Income</th>
+                <th>Sales Dates</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in sales_data %}
+            <tr>
+                <td>{{ data.product.title }}</td>
+                <td>{{ data.sales_count }}</td>
+                <td>${{ data.total_income }}</td>
+                <td>
+                    <ul>
+                        {% for date in data.sales_dates %}
+                        <li>{{ date|date:"Y-m-d H:i" }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+                <td>
+                    <form action="{% url 'delete-product' data.product.id %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                    <a href="{% url 'product-edit' data.product.id %}" class="btn btn-warning">Edit</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1{% if start_date %}&start_date={{ start_date|date:'Y-m-d\TH:i' }}{% endif %}{% if end_date %}&end_date={{ end_date|date:'Y-m-d\TH:i' }}{% endif %}">&laquo; first</a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if start_date %}&start_date={{ start_date|date:'Y-m-d\TH:i' }}{% endif %}{% if end_date %}&end_date={{ end_date|date:'Y-m-d\TH:i' }}{% endif %}">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if start_date %}&start_date={{ start_date|date:'Y-m-d\TH:i' }}{% endif %}{% if end_date %}&end_date={{ end_date|date:'Y-m-d\TH:i' }}{% endif %}">next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if start_date %}&start_date={{ start_date|date:'Y-m-d\TH:i' }}{% endif %}{% if end_date %}&end_date={{ end_date|date:'Y-m-d\TH:i' }}{% endif %}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+
+    <h2>Deleted Products</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in deleted_products %}
+            <tr>
+                <td>{{ product.title }}</td>
+                <td>
+                    <form action="{% url 'permanent-delete-product' product.id %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Permanently Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
