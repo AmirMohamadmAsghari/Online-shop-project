@@ -4,6 +4,7 @@ from django.views import View
 from .models import Category, Product, Image, Review
 from .serializers import ProductSerializer, CategorySerializer, ImageSerializer
 from rest_framework import generics, response, permissions, views
+from django.core.paginator import Paginator
 from django.contrib.auth import get_user_model
 from .tasks import my_task
 
@@ -15,7 +16,11 @@ class ProductView(View):
     template_name = 'products.html'
 
     def get(self, request):
-        products = Product.objects.filter(stock__gt=0)
+        products_list = Product.objects.filter(stock__gt=0)
+        paginator = Paginator(products_list, 10)
+        page_number = request.GET.get('page')
+        products = paginator.get_page(page_number)
+
         parent_categories = Category.objects.filter(parent_category__isnull=True)
         return render(request, self.template_name, {'products': products, 'categories': parent_categories, 'all_products': True})
 
