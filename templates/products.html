@@ -84,6 +84,16 @@
 
         <!-- Product Listings -->
         <div class="col-md-9">
+            <!-- Search Bar -->
+            <form method="GET" action="{% url 'products' %}">
+                <div class="input-group mb-4">
+                    <input type="text" name="search" class="form-control" placeholder="Search for products" value="{{ search_query }}">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="submit">Search</button>
+                    </div>
+                </div>
+            </form>
+
             <h2 class="mb-4">{% if selected_category %}{{ selected_category.name }}{% else %}All Products{% endif %}</h2>
             <div class="row products" id="products">
                 {% for product in products %}
