@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.views import View
@@ -16,13 +17,26 @@ class ProductView(View):
     template_name = 'products.html'
 
     def get(self, request):
+        search_query = request.GET.get('search', '')
         products_list = Product.objects.filter(stock__gt=0)
+
+        if search_query:
+            products_list = products_list.filter(
+                Q(title__icontains=search_query) |
+                Q(description__icontains=search_query)
+            )
+
         paginator = Paginator(products_list, 10)
         page_number = request.GET.get('page')
         products = paginator.get_page(page_number)
 
         parent_categories = Category.objects.filter(parent_category__isnull=True)
-        return render(request, self.template_name, {'products': products, 'categories': parent_categories, 'all_products': True})
+        return render(request, self.template_name, {
+            'products': products,
+            'categories': parent_categories,
+            'all_products': True,
+            'search_query': search_query
+        })
 
 
 class CategoryProductView(View):
@@ -51,10 +65,9 @@ class ProductDetailView(View):
         product = get_object_or_404(Product, id=product_id)
         images = Image.objects.filter(product_id=product.id)
         review = Review.objects.filter(product_id=product.id)
-        discounted_price = product.price - product.discount.amount if product.discount else None
+        discounted_price = product.get_discounted_price()
         return render(request, self.template_name,
                       {'product': product, 'images': images, 'review': review, 'discounted_price': discounted_price})
-
 
 def custom_404_view(request, exception):
     return render(request, '404.html', status=404)
