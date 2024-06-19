@@ -59,12 +59,11 @@
                 <p class="lead">{{ product.description }}</p>
                 <hr class="my-4">
                 <p>Price: ${{ product.price }}</p>
-                {% if discounted_price %}
-                    <p>Discount: ${{ product.discount.amount }}</p>
-                    <p>Discounted Price: ${{ discounted_price }}</p>
+                {% if discounted_price and discounted_price < product.price %}
+                    <p>Discounted Price: {{ discounted_price }}</p>
+                    <p>Original Price: <del>{{ product.price }}</del></p>
                 {% else %}
-                    <p>No discount available</p>
-
+                    <p>Price: {{ product.price }}</p>
                 {% endif %}
                 <p>Stock: {{ product.stock }}</p>
                 <p>Brand: {{ product.brand }}</p>
@@ -190,6 +189,5 @@
         });
     });
 
-</script>
 </script>
 {% endblock %}
