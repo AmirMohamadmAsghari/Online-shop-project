@@ -16,6 +16,31 @@ class Product(TimeStampedMixin, LogicalMixin):
     discount = models.ForeignKey('Discount',on_delete=models.CASCADE,null=True, blank=True, related_name='DiscountP')
     category = models.ForeignKey('Category', on_delete=models.CASCADE, related_name='CategoryProducts')
 
+    def get_discounted_price(self):
+        original_price = self.price
+
+        # Apply product discount
+        if self.discount:
+            if self.discount.type == 'percentage':
+                discount_value = (self.discount.amount / 100) * original_price
+                original_price -= discount_value
+            elif self.discount.type == 'fixed':
+                original_price -= self.discount.amount
+
+        # Apply category discounts
+        category = self.category
+        while category:
+            if category.discount:
+                if category.discount.type == 'percentage':
+                    discount_value = (category.discount.amount / 100) * original_price
+                    original_price -= discount_value
+                elif category.discount.type == 'fixed':
+                    original_price -= category.discount.amount
+            category = category.parent_category
+
+        return max(original_price, 0)
+
+
     class Meta:
         verbose_name = 'Product'
         verbose_name_plural = 'Products'
@@ -40,8 +65,12 @@ class Category(TimeStampedMixin, LogicalMixin):
 
 
 class Discount(TimeStampedMixin, LogicalMixin):
+    STATUS_CHOICES = [
+        ('percentage', 'Percentage'),
+        ('fixed', 'Fixed'),
+    ]
     amount = models.IntegerField(default=0)
-    type = models.CharField(max_length=255)
+    type = models.CharField(max_length=255,choices=STATUS_CHOICES)
     expiration_date = models.DateField()
 
     class Meta:
