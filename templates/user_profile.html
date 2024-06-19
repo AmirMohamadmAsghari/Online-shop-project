@@ -96,7 +96,9 @@
 {% block content %}
 <div class="container mt-5">
     <h1>User Profile</h1>
-
+    {% if is_seller %}
+        <a href="{% url 'seller-panel' %}" class="btn btn-primary">Go to Seller Panel</a>
+    {% endif %}
     <div class="profile-section">
         <h2>Profile Information</h2>
         <form method="post">
