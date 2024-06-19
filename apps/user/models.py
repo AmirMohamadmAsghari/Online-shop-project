@@ -20,7 +20,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin, LogicalMixin, TimeStampedMi
     name = models.CharField(max_length=255,blank=True,null=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now=True)
-    discount_code = models.ForeignKey('CodeDiscount', on_delete=models.CASCADE, related_name='DiscountOrder', null=True, blank=True)
+    discount_code = models.ForeignKey('CodeDiscount', on_delete=models.CASCADE, related_name='discount_users', null=True, blank=True)
     objects = CustomUserManager()
 
     class Meta:
@@ -52,5 +52,14 @@ class Address(TimeStampedMixin, LogicalMixin):
 
 
 class CodeDiscount(LogicalMixin, TimeStampedMixin):
+    TYPE_CHOICE=[
+        ('fixed', 'Fixed'),
+        ('percentage', 'Percent')
+                 ]
     amount = models.IntegerField(default=0)
-    code = models.IntegerField()
+    type = models.CharField(max_length=255, choices=TYPE_CHOICE, default='fixed')
+    code = models.CharField(max_length=255, unique=True)  # Changed to CharField for better code representation
+    minimum_purchase_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    def __str__(self):
+        return self.code
