@@ -6,6 +6,8 @@
     <h2>Payment for Order #{{ order.id }}</h2>
     <form method="post" action="{% url 'payment-initiate' order.id %}">
         {% csrf_token %}
+        <label for="discount_code">Discount Code:</label>
+        <input type="text" id="discount_code" name="discount_code">
         <label for="payment_type">Payment Type:</label>
         <select id="payment_type" name="payment_type" required>
             <option value="Credit Card">Credit Card</option>
