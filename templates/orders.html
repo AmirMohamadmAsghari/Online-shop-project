@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
+{% load custom_filters %}
 {% block title %}Your Cart{% endblock %}
 {% block style %}
 <style>
-    /* Style for cart items */
     .cart-item {
         border-bottom: 1px solid #ddd;
         padding: 15px;
@@ -28,7 +28,6 @@
         font-weight: bold;
     }
 
-    /* Style for total section */
     .total-section {
         margin-top: 20px;
         padding: 20px;
@@ -39,7 +38,6 @@
         margin-top: 0;
     }
 
-    /* Style for checkout button */
     .checkout-button {
         display: block;
         width: 100%;
@@ -57,18 +55,17 @@
         background-color: #0056b3;
     }
 
-    /* Style for cart items container */
     .cart-items-container {
         display: flex;
         flex-wrap: wrap;
         gap: 20px;
     }
 
-    /* Style for each column */
     .column {
         flex: 1;
         max-width: calc(50% - 20px);
     }
+
     .btn {
         display: inline-block;
         padding: 8px 16px;
@@ -80,99 +77,107 @@
         border: none;
         cursor: pointer;
     }
+
     .btn:hover {
         background-color: #0056b3;
     }
+
     .btn-add {
         margin-top: 20px;
     }
 </style>
 {% endblock %}
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-5 cart-content">
     <h1>Your Orders</h1>
-    <!-- Check if there are any orders -->
-    {% if cart_orders %}
-        <!-- Iterate over each order -->
-        {% for order in cart_orders %}
-            <h2>Order {{ order.id }}</h2>
-            <!-- Check if there are any products in the order -->
-            {% if products %}
-                <!-- Display products in a flex container with wrap -->
-                <div class="cart-items-container">
-                    <!-- Iterate over each product in the order -->
-                    {% load custom_filters %}
-                    {% for product in products %}
-                        <div class="cart-item column">
-                            {% with image=images|dict_key:product.product.id %}
-                                {% if image %}
-                                    <img src="{{ image.image.url }}" alt="{{ product.product.title }}">
-                                {% endif %}
-                            {% endwith %}
-                            <div class="cart-item-details">
-                                <h3>{{ product.product.title }}</h3>
-                                <p>{{ product.product.description }}</p>
-                                <p class="cart-item-price">Price: ${{ product.total_price }}</p>
-                                <p>Quantity: {{ product.quantity }}</p>
-                                <button class="btn btn-danger delete-order-item" data-id="{{ product.id }}">Delete</button>
-                            </div>
-                        </div>
-                    {% endfor %}
+    {% if products %}
+        <div class="cart-items-container">
+            {% for product in products %}
+                <div class="cart-item column">
+                    {% with image=images|dict_key:product.product.id %}
+                        {% if image %}
+                            <img src="{{ image.image.url }}" alt="{{ product.product.title }}">
+                        {% endif %}
+                    {% endwith %}
+                    <div class="cart-item-details">
+                        <h3>{{ product.product.title }}</h3>
+                        <p>{{ product.product.description }}</p>
+                        <p class="cart-item-price">Price: ${{ product.price }}</p>
+                        <p>Discounted Price: ${{ product.discounted_price }}</p>  <!-- Display discounted price -->
+                        <p>Quantity: {{ product.quantity }}</p>
+                        <button class="btn btn-secondary btn-increase" data-id="{{ product.product.id }}">+</button>
+                        <button class="btn btn-secondary btn-decrease" data-id="{{ product.product.id }}">-</button>
+                    </div>
                 </div>
-            {% else %}
-                <p>No products in this order.</p>
-            {% endif %}
-        {% endfor %}
+            {% endfor %}
+
+        </div>
     {% else %}
-        <p>No orders available.</p>
+        <p>No products in your cart.</p>
     {% endif %}
 
-    <!-- Total section -->
     <div class="total-section">
         <h2>Total</h2>
         <p>Total items: {{ total_items }}</p>
         <p>Total price: ${{ total_price }}</p>
         <a href="{% url 'address-list' %}" class="btn btn-add">Select Address</a>
-        <!-- Checkout button -->
         <a href="{% url 'checkout' %}" class="checkout-button">Proceed to Checkout</a>
     </div>
 </div>
 {% endblock %}
 {% block script %}
 <script>
-   document.addEventListener('DOMContentLoaded', function() {
-    const deleteButtons = document.querySelectorAll('.delete-order-item');
+document.addEventListener('DOMContentLoaded', function() {
+    function attachEventListeners() {
+        const increaseButtons = document.querySelectorAll('.btn-increase');
+        const decreaseButtons = document.querySelectorAll('.btn-decrease');
 
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const itemId = this.getAttribute('data-id');
-
-            fetch(`/order/api/order-item/${itemId}/`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + localStorage.getItem('token'), // Adjust if you're using a different auth mechanism
-                }
-            })
-            .then(response => {
-                if (response.status === 204) {
-                    // Remove the item row from the DOM
-                    const itemRow = this.closest('.cart-item');
-                    if (itemRow) {
-                        itemRow.remove();
-                    }
-                } else {
-                    alert('You have not authenticated')
-                    response.text().then(text => console.error('Failed to delete the order item:', text));
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
+        increaseButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.getAttribute('data-id');
+                updateQuantity(productId, 'increase');
             });
         });
-    });
+
+        decreaseButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.getAttribute('data-id');
+                updateQuantity(productId, 'decrease');
+            });
+        });
+    }
+
+    function updateQuantity(productId, action) {
+        fetch('/order/view-order/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                product_id: productId,
+                action: action
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.html) {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(data.html, 'text/html');
+                const newCartContent = doc.querySelector('.cart-content');
+                document.querySelector('.cart-content').innerHTML = newCartContent.innerHTML;
+                // Reattach event listeners after updating cart content
+                attachEventListeners();
+            }
+            if (data.error) {
+                console.error(data.error);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // Initial attachment of event listeners
+    attachEventListeners();
 });
 </script>
 {% endblock %}
-
