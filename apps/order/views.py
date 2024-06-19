@@ -1,14 +1,17 @@
 # views.py
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.template.loader import render_to_string
 from django.views import View
 from django.db import transaction
 from rest_framework import generics
+from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from .models import OrderItem, Order, Address, Payment
+from .models import OrderItem, Order, Address, Payment, CodeDiscount
 from .serializers import OrderItemSerializer, OrderSerializer, AddressSerializer
 from .helpers import get_or_create_session_cart
 from ..product.models import Product, Image
@@ -16,132 +19,137 @@ from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 import logging
+import json
+from django.http import JsonResponse
 
 logger = logging.getLogger(__name__)
 
 
-class AddToCartView(generics.CreateAPIView):
-    serializer_class = OrderItemSerializer
-
-    def create(self, request, *args, **kwargs):
+class AddToCartView(APIView):
+    def post(self, request, *args, **kwargs):
         product_id = request.data.get('product_id')
-        quantity = request.data.get('quantity', 1)
+        quantity = int(request.data.get('quantity', 1))
 
         if not product_id:
             return Response({'error': 'Product ID is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Get or create the order
-        if request.user.is_authenticated:
-            order, created = Order.objects.get_or_create(customer=request.user, status='open')
-        else:
-            order = get_or_create_session_cart(request)
 
         try:
             product = Product.objects.get(id=product_id)
         except Product.DoesNotExist:
             return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        total_price = product.price * quantity
+        cart = request.session.get('cart', {})
 
-        # Create the order item
-        order_item = OrderItem.objects.create(
-            order=order,
-            product=product,
-            quantity=quantity,
-            total_price=total_price,
-        )
+        if product_id in cart:
+            cart[product_id]['quantity'] += quantity
+        else:
+            cart[product_id] = {
+                'product_id': product.id,
+                'quantity': quantity,
+                'price': float(product.price),
+                'title': product.title
+            }
 
-        serializer = self.get_serializer(order_item)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        request.session['cart'] = cart
+        request.session.modified = True
 
+        return Response(cart, status=status.HTTP_201_CREATED)
 
 
 class OrderView(View):
     def get(self, request):
-        total_items, total_price, products, cart_order = self.get_cart_details(request)
-        product_images = self.get_images_for_products(products)
+        cart_details = self.get_cart_details(request)
+        product_images = self.get_images_for_products(cart_details['products'])
 
         return render(request, 'orders.html', {
-            'cart_orders': [cart_order] if cart_order else [],
-            'products': products,
-            'total_items': total_items,
-            'total_price': total_price,
+            'products': cart_details['products'],
+            'total_items': cart_details['total_items'],
+            'total_price': cart_details['total_price'],
             'images': product_images
         })
 
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            action = data.get('action')
+            product_id = int(data.get('product_id'))
+
+            if action == 'increase':
+                self.increase_quantity(request, product_id)
+            elif action == 'decrease':
+                self.decrease_quantity(request, product_id)
+
+            cart_details = self.get_cart_details(request)
+            product_images = self.get_images_for_products(cart_details['products'])
+
+            html = render_to_string('orders.html', {
+                'products': cart_details['products'],
+                'total_items': cart_details['total_items'],
+                'total_price': cart_details['total_price'],
+                'images': product_images
+            }, request)
+
+            return JsonResponse({'html': html})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    def increase_quantity(self, request, product_id):
+        cart = request.session.get('cart', {})
+        if str(product_id) in cart:
+            product = get_object_or_404(Product, pk=product_id)
+            if cart[str(product_id)]['quantity'] < product.stock:
+                cart[str(product_id)]['quantity'] += 1
+                request.session['cart'] = cart
+            else:
+                # Handle insufficient stock scenario (optional)
+                # You can raise an error or display a message to the user
+                messages.error(request, 'Insufficient stock available.')
+        else:
+            # Handle case where product is not in cart (optional)
+            messages.error(request, 'Product not found in cart.')
+
+    def decrease_quantity(self, request, product_id):
+        cart = request.session.get('cart', {})
+        if str(product_id) in cart and cart[str(product_id)]['quantity'] > 0:
+            cart[str(product_id)]['quantity'] -= 1
+        if cart[str(product_id)]['quantity'] == 0:
+            del cart[str(product_id)]
+        request.session['cart'] = cart
+
     def get_cart_details(self, request):
+        cart = request.session.get('cart', {})
         total_items = 0
         total_price = 0
         products = []
 
-        if request.user.is_authenticated:
-            cart_order, products = self.handle_authenticated_user_cart(request)
-        else:
-            cart_order = self.get_or_create_session_cart(request)
-            products = OrderItem.objects.filter(order=cart_order)
+        for item in cart.values():
+            product = Product.objects.get(id=item['product_id'])
+            quantity = item['quantity']
+            price = product.price
+            discounted_price = product.get_discounted_price()  # Replace with your method to calculate discounted price
 
-        for product in products:
-            total_items += product.quantity
-            total_price += product.quantity * product.product.price
-        cart_order.total_amount = total_price
-        cart_order.save()
+            # Calculate total price for the item considering quantity and discounted price
+            total_price_item = discounted_price * quantity
 
-        return total_items, total_price, products, cart_order
+            total_items += quantity
+            total_price += total_price_item
 
-    def handle_authenticated_user_cart(self, request):
-        cart_orders = Order.objects.filter(customer=request.user, status='open')
-        if cart_orders.exists():
-            cart_order = cart_orders.first()
-            session_cart_order_id = request.session.get('cart_order')
-            if session_cart_order_id:
-                try:
-                    session_cart_order = Order.objects.get(id=session_cart_order_id, status='open')
-                    if session_cart_order and session_cart_order != cart_order:
-                        self.merge_carts(cart_order, session_cart_order)
-                        request.session['cart_order'] = cart_order.id
-                except ObjectDoesNotExist:
-                    logger.warning(f'Session cart order with id {session_cart_order_id} does not exist.')
-            products = OrderItem.objects.filter(order=cart_order)
-        else:
-            cart_order = self.get_or_create_session_cart(request)
-            products = OrderItem.objects.filter(order=cart_order)
+            products.append({
+                'product': product,
+                'quantity': quantity,
+                'price': price,
+                'discounted_price': discounted_price,
+                'total_price': total_price_item  # Use total_price_item here
+            })
 
-        return cart_order, products
-
-    def merge_carts(self, user_cart, session_cart):
-        try:
-            with transaction.atomic():
-                for item in OrderItem.objects.select_for_update().filter(order=session_cart):
-                    existing_item = OrderItem.objects.filter(order=user_cart, product=item.product).first()
-                    if existing_item:
-                        existing_item.quantity += item.quantity
-                        existing_item.total_price += item.total_price
-                        existing_item.save()
-                    else:
-                        OrderItem.objects.create(
-                            order=user_cart,
-                            product=item.product,
-                            quantity=item.quantity,
-                            total_price=item.total_price
-                        )
-                session_cart.delete()
-        except Exception as e:
-            logger.error(f'Error merging carts: {e}')
-            raise
-
-    def get_or_create_session_cart(self, request):
-        session_cart_order_id = request.session.get('cart_order')
-        if session_cart_order_id:
-            try:
-                return Order.objects.get(id=session_cart_order_id, status='open')
-            except ObjectDoesNotExist:
-                logger.warning(f'Session cart order with id {session_cart_order_id} does not exist.')
-        session_cart_order = Order.objects.create(status='open')
-        request.session['cart_order'] = session_cart_order.id
-        return session_cart_order
+        return {
+            'total_items': total_items,
+            'total_price': total_price,
+            'products': products
+        }
 
     def get_images_for_products(self, products):
-        product_ids = [item.product.id for item in products]
+        product_ids = [item['product'].id for item in products]
         images = Image.objects.filter(product_id__in=product_ids)
 
         product_images = {}
@@ -176,48 +184,122 @@ class AddressAPIView(generics.ListCreateAPIView):
 
 class CheckOutView(LoginRequiredMixin, View):
     def get(self, request):
-        cart_id = request.session.get('cart_id')
-        user_order, created = Order.objects.get_or_create(customer=request.user, status='open')
+        selected_address_id = request.session.get('selected_address_id')
+        if not selected_address_id:
+            messages.error(request, 'Please select an address before proceeding to checkout.')
+            return redirect('address-list')
 
-        if cart_id:
-            try:
-                cart_order = Order.objects.get(id=cart_id, status='open')
-                self._merge_cart_order_items(cart_order, user_order)
-                cart_order.delete()
-                del request.session['cart_id']
-            except Order.DoesNotExist:
-                pass
+        try:
+            address = Address.objects.get(id=selected_address_id, user=request.user)
+        except Address.DoesNotExist:
+            messages.error(request, 'Selected address not found.')
+            return redirect('address-list')
 
-        return redirect('payment-initiate', order_id=user_order.id)
+        cart = request.session.get('cart', {})
+        if not cart:
+            messages.error(request, 'Your cart is empty.')
+            return redirect('view-order')
 
-    def _merge_cart_order_items(self, cart_order, user_order):
-        for item in OrderItem.objects.filter(order=cart_order):
-            item.order = user_order
-            item.save()
+        # Calculate total amount with discounts applied
+        total_amount = 0
+
+        for item in cart.values():
+            product = Product.objects.get(id=item['product_id'])
+            discounted_price = product.get_discounted_price()  # Calculate discounted price
+            total_amount += item['quantity'] * discounted_price
+
+        # Check if there's an existing open order
+        try:
+            order = Order.objects.get(customer=request.user, status='open')
+            order.total_amount = total_amount
+            order.address = address
+            order.save()
+        except Order.DoesNotExist:
+            order = Order.objects.create(
+                customer=request.user,
+                total_amount=total_amount,
+                address=address,
+                status='open'
+            )
+
+        # Clear existing order items if updating an existing order
+        order.OrderItem.all().delete()
+
+        for item in cart.values():
+            product = Product.objects.get(id=item['product_id'])
+            discounted_price = product.get_discounted_price()  # Calculate discounted price
+            OrderItem.objects.create(
+                order=order,
+                product_id=item['product_id'],
+                quantity=item['quantity'],
+                total_price=item['quantity'] * discounted_price  # Use discounted price here
+            )
+
+        print(request.session['cart'])
+        print(request.session['selected_address_id'])
+
+        return redirect('payment-initiate', order_id=order.id)
 
 
 class PaymentInitiateView(LoginRequiredMixin, View):
     def get(self, request, order_id):
-        order = get_object_or_404(Order, id=order_id, customer=request.user, status='open')
-        return render(request, 'payment_initiate.html', {'order': order})
+        try:
+            order = Order.objects.get(id=order_id, customer=request.user)
+            return render(request, 'payment_initiate.html', {'order': order})
+        except Order.DoesNotExist:
+            messages.error(request, 'Order not found.')
+            return redirect('view-order')
 
     def post(self, request, order_id):
-        order = get_object_or_404(Order, id=order_id,customer=request.user, status='open')
-        payment_type = request.POST.get('payment_type')
-        transaction_id = request.POST.get('transaction_id')
-        amount = order.total_amount
+        try:
+            order = Order.objects.get(id=order_id, customer=request.user)
+            payment_type = request.POST.get('payment_type', 'Not Specified')
+            transaction_id = request.POST.get('transaction_id', 'Not Specified')
+            discount_code = request.POST.get('discount_code')
 
-        payment = Payment.objects.create(
-            order=order,
-            payment_type=payment_type,
-            transaction_id=transaction_id,
-            amount=amount
-        )
+            with transaction.atomic():
+                # Apply discount code if provided
+                if discount_code:
+                    try:
+                        code_discount = CodeDiscount.objects.get(code=discount_code)
+                        if code_discount.is_active:
+                            if order.total_amount >= code_discount.minimum_purchase_amount:
+                                if code_discount.type == 'percentage':
+                                    discount_amount = (code_discount.amount / 100) * order.total_amount
+                                elif code_discount.type == 'fixed':
+                                    discount_amount = code_discount.amount
+                                # Apply the discount
+                                order.total_amount = max(order.total_amount - discount_amount, 0)
+                                order.discount_code = code_discount.code
+                                # Deactivate the discount code
+                                code_discount.is_active = False
+                                # Save the order and discount code
+                                order.save()
+                                code_discount.save()
+                            else:
+                                messages.error(request,
+                                               f"Minimum purchase amount for this discount code is ${code_discount.minimum_purchase_amount}.")
+                                return redirect('payment-initiate', order_id=order.id)
+                        else:
+                            messages.error(request, 'This discount code is no longer active.')
+                            return redirect('payment-initiate', order_id=order.id)
+                    except CodeDiscount.DoesNotExist:
+                        messages.error(request, 'Invalid discount code.')
+                        return redirect('payment-initiate', order_id=order.id)
 
-        order.status = 'pending'
-        order.save()
+                # Create a Payment object to store payment details
+                payment = Payment.objects.create(
+                    payment_type=payment_type,
+                    transaction_id=transaction_id,
+                    order=order,
+                    amount=order.total_amount,
+                    status='pending'
+                )
 
-        return redirect('payment-success', payment_id=payment.id)
+                return redirect('payment-success', payment_id=payment.id)
+        except Order.DoesNotExist:
+            messages.error(request, 'Order not found.')
+            return redirect('view-order')
 
 
 class PaymentSuccessView(LoginRequiredMixin, View):
@@ -227,12 +309,16 @@ class PaymentSuccessView(LoginRequiredMixin, View):
         order.status = 'success'
         order.save()
 
-        order_item = OrderItem.objects.filter(order=order)
-        for item in order_item:
+        order_items = OrderItem.objects.filter(order=order)
+        for item in order_items:
             product = item.product
             product.stock -= item.quantity
             product.sales_number += item.quantity
             product.save()
+
+        del request.session['cart']
+        del request.session['selected_address_id']
+
         return render(request, 'payment_success.html', {'payment': payment})
 
 
