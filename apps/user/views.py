@@ -12,6 +12,7 @@ from .validators import validate_password_strength
 from .forms import UserProfileForm, CustomPasswordChangeForm
 from .utils import generate_otp, send_otp_email, store_otp_in_redis
 import redis
+from django.contrib.auth.models import Group
 from django.urls import reverse
 from django.core.validators import validate_email
 
@@ -224,14 +225,10 @@ class AddressSelectView(LoginRequiredMixin, View):
         address_id = request.POST.get('address_id')
         try:
             address = Address.objects.get(id=address_id, user=request.user)
-            order = Order.objects.get(customer=request.user, status='open')
-            order.address = address
-            order.save()
+            request.session['selected_address_id'] = address.id
             messages.success(request, 'Address selected successfully.')
         except Address.DoesNotExist:
             messages.error(request, 'Address not found')
-        except Order.DoesNotExist:
-            messages.error(request, 'Open Order Not found')
         return redirect('view-order')
 
 
@@ -264,16 +261,20 @@ class AddressDeleteView(LoginRequiredMixin, View):
 class UserProfileView(LoginRequiredMixin, View):
     def get(self, request):
         user = request.user
-        addresses = Address.objects.filter(user=user)  # Fetching the addresses using the correct related name
-        orders = Order.objects.filter(customer=user)  # Assuming there is an Order model related to the user
+        addresses = Address.objects.filter(user=user)
+        orders = Order.objects.filter(customer=user)
         profile_form = UserProfileForm(instance=user)
         password_form = CustomPasswordChangeForm(user=user)
+
+        is_seller = user.groups.filter(name='Sellers').exists()
+        print(is_seller)
 
         return render(request, 'user_profile.html', {
             'profile_form': profile_form,
             'password_form': password_form,
             'addresses': addresses,
-            'orders': orders
+            'orders': orders,
+            'is_seller': is_seller
         })
 
     def post(self, request):
@@ -288,7 +289,7 @@ class UserProfileView(LoginRequiredMixin, View):
 
         if 'change_password' in request.POST and password_form.is_valid():
             user = password_form.save()
-            update_session_auth_hash(request, user)  # Important to keep the user logged in
+            update_session_auth_hash(request, user)
             messages.success(request, 'Your password was successfully updated!')
             return redirect('profile')
 
