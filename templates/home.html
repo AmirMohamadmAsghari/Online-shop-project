@@ -1,106 +1,114 @@
 {% extends 'base.html' %}
-{% block title%}Home{% endblock %}
-    {% block style %}
-    <style>
-        .jumbotron {
-            background-image: url('banner.jpg');
-            background-size: cover;
-            color: #ffffff;
-        }
-        .card {
-            border: none;
-            transition: all 0.3s;
-        }
-        .card:hover {
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-        }
-    </style>
-    {% endblock %}
+{% block title %}Home{% endblock %}
+{% block style %}
+<style>
+    .jumbotron {
+        background-image: url('banner.jpg');
+        background-size: cover;
+        color: #ffffff;
+    }
+    .card {
+        border: none;
+        transition: all 0.3s;
+        height: 100%;
+    }
+    .card:hover {
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+    }
+    .card-img-top {
+        height: 200px;
+        object-fit: cover;
+    }
+    .card-body {
+        height: calc(100% - 200px);
+        overflow: hidden;
+    }
+    .card-title {
+        font-size: 1.2rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .card-text {
+        font-size: 1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+{% endblock %}
 </head>
 <body>
 {% block content %}
 
-    <div class="container">
-        <!-- Hero section -->
-        <div class="jumbotron text-center" style="color: blanchedalmond">
-            <h1 class="display-4"style="color: #343a40">Welcome to Your Online Shop</h1>
-            <p class="lead"style="color: #343a40">Find everything you need in one place.</p>
-            <!-- Add search bar here -->
-            <hr class="my-4">
-        </div>
-
-        <!-- Featured products -->
-        <h2>Featured Products</h2>
-        <div class="row">
-            <!-- Featured product cards -->
-            <div class="col-md-4">
-                <div class="card">
-                    <img src="product1.jpg" class="card-img-top" alt="Product 1">
-                    <div class="card-body">
-                        <h5 class="card-title">Product 1</h5>
-                        <p class="card-text">$99.99</p>
-                        <a href="#" class="btn btn-primary">View Details</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <img src="product2.jpg" class="card-img-top" alt="Product 2">
-                    <div class="card-body">
-                        <h5 class="card-title">Product 2</h5>
-                        <p class="card-text">$79.99</p>
-                        <a href="#" class="btn btn-primary">View Details</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <img src="product3.jpg" class="card-img-top" alt="Product 3">
-                    <div class="card-body">
-                        <h5 class="card-title">Product 3</h5>
-                        <p class="card-text">$129.99</p>
-                        <a href="#" class="btn btn-primary">View Details</a>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="container">
+    <!-- Hero section -->
+    <div class="jumbotron text-center" style="color: blanchedalmond">
+        <h1 class="display-4" style="color: #343a40">Welcome to Your Online Shop</h1>
+        <p class="lead" style="color: #343a40">Find everything you need in one place.</p>
+        <!-- Add search bar here -->
+        <hr class="my-4">
     </div>
 
-    <!-- Advertising or Festival banners -->
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card">
-                    <img src="advertising-banner.jpg" class="card-img-top" alt="Advertising Banner">
-                    <div class="card-body">
-                        <h5 class="card-title">Special Offer</h5>
-                        <p class="card-text">Limited time offer. Get up to 50% off!</p>
-                        <a href="#" class="btn btn-primary">Shop Now</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <img src="festival-banner.jpg" class="card-img-top" alt="Festival Banner">
-                    <div class="card-body">
-                        <h5 class="card-title">Spring Festival Sale</h5>
-                        <p class="card-text">Celebrate the season with big discounts!</p>
-                        <a href="#" class="btn btn-primary">Shop Now</a>
-                    </div>
+    <!-- Featured products -->
+    <h2>Discounted Products</h2>
+    <div class="row">
+        {% for product in discounted_products %}
+        <div class="col-md-4">
+            <div class="card">
+                <img src="{{ product.ProductImages.first.image.url }}" class="card-img-top" alt="{{ product.title }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.title }}</h5>
+                    <p class="card-text">${{ product.price }}</p>
+                    <p class="card-text"><strong>Discount: </strong>{{ product.discount.amount }}%</p>
+                    <p class="card-text"><strong>Discount Type: </strong>{{ product.discount.type }}</p>
+                    <p class="card-text"><strong>Expiration Date: </strong>{{ product.discount.expiration_date }}</p>
+                    <a href="{% url 'detail' product.id %}" class="btn btn-primary">View Details</a>
                 </div>
             </div>
         </div>
+        {% endfor %}
     </div>
+    <div class="pagination">
+        <span class="step-links">
+            {% if discounted_products.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ discounted_products.previous_page_number }}">previous</a>
+            {% endif %}
 
-    <!-- Footer -->
-    <footer class="footer mt-auto py-3 bg-light">
-        <div class="container">
-            <p>&copy; 2024 Your Online Shop</p>
+            <span class="current">
+                Page {{ discounted_products.number }} of {{ discounted_products.paginator.num_pages }}.
+            </span>
+
+            {% if discounted_products.has_next %}
+                <a href="?page={{ discounted_products.next_page_number }}">next</a>
+                <a href="?page={{ discounted_products.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+</div>
+
+<!-- Categories with Discounts -->
+<div class="container mt-5">
+    <h2>Categories with Discounts</h2>
+    <div class="row">
+        {% for category in discounted_categories %}
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ category.name }}</h5>
+                    <p class="card-text"><strong>Discount: </strong>{{ category.discount.amount }}%</p>
+                    <p class="card-text">Explore discounted products in the {{ category.name }} category.</p>
+                    <a href="{% url "category-products" category.id %}" class="btn btn-primary">Shop Now</a>
+                </div>
+            </div>
         </div>
-    </footer>
+        {% endfor %}
+    </div>
+</div>
 
-    <!-- Bootstrap JS (Optional) -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- Bootstrap JS (Optional) -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 {% endblock %}
 </body>
-
