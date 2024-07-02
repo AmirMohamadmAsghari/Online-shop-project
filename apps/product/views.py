@@ -1,6 +1,11 @@
+import json
+
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
+from django.utils import timezone
 from django.views import View
 from .models import Category, Product, Image, Review
 from .serializers import ProductSerializer, CategorySerializer, ImageSerializer
@@ -26,7 +31,7 @@ class ProductView(View):
                 Q(description__icontains=search_query)
             )
 
-        paginator = Paginator(products_list, 10)
+        paginator = Paginator(products_list, 9)
         page_number = request.GET.get('page')
         products = paginator.get_page(page_number)
 
@@ -69,7 +74,8 @@ class ProductDetailView(View):
         return render(request, self.template_name,
                       {'product': product, 'images': images, 'review': review, 'discounted_price': discounted_price})
 
-def custom_404_view(request, exception):
+
+def custom_404(request, exception):
     return render(request, '404.html', status=404)
 
 
@@ -91,13 +97,34 @@ class ImageListAPIView(generics.ListAPIView):
     serializer_class = ImageSerializer
 
 
-class ReviewsAPIView(View):
+class ReviewsAPIView(View, LoginRequiredMixin):
     def get(self, request, product_id):
-        print("Fetching reviews for product with ID:", product_id)
-        # Fetch reviews and related customer user information
-        reviews = Review.objects.filter(product_id=product_id).select_related('customer').values('rating',
-                                                                                                 'review_Text',
-                                                                                                 'customer__username',
-                                                                                                 'created')
-        print("Fetched reviews:", reviews)
+        reviews = Review.objects.filter(product_id=product_id).select_related('customer').values(
+            'rating', 'review_Text', 'customer__username', 'created'
+        )
         return JsonResponse(list(reviews), safe=False)
+
+    def post(self, request, product_id):
+        if request.user.is_authenticated:
+            # Handle CSRF token validation
+            csrf_token = request.META.get('HTTP_X_CSRFTOKEN')
+            if not csrf_token:
+                return JsonResponse({'error': 'CSRF token missing'}, status=403)
+
+            # Parse JSON data from request
+            data = json.loads(request.body)
+            rating = data.get('rating')
+            review_text = data.get('reviewText')
+
+            # Create and save new review
+            Review.objects.create(
+                product_id=product_id,
+                customer=request.user,
+                rating=rating,
+                review_Text=review_text
+            )
+            print('a')
+            return JsonResponse({'success': 'Review submitted successfully'})
+        else:
+            print('b')
+            return JsonResponse({'error': 'You must log in to post a comment'})
