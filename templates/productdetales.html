@@ -87,9 +87,23 @@
                     <div id="reviewsPage" style="display: none;">
                         <!-- Review cards will be dynamically added here -->
                     </div>
+                    <!-- Review form hidden initially -->
+                    <form id="reviewForm" style="display: none;" method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="rating">Rating</label>
+                            <input type="number" class="form-control" id="rating" name="rating" min="1" max="5" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reviewText">Review</label>
+                            <textarea class="form-control" id="reviewText" name="reviewText" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit Review</button>
+                    </form>
                 </div>
             </div>
         </div>
+    </div>
         <div class="col-md-6">
             <!-- Sales Information -->
             <div class="card">
@@ -108,86 +122,116 @@
 {% block script %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
 <script>
-    $(document).ready(function(){
-        // Initialize Slick Carousel here
-        $('.slider').slick({
-            dots: true,
-            infinite: true,
-            speed: 300,
-            slidesToShow: 1,
-            adaptiveHeight: true
-        });
+    $(document).ready(function() {
+    // Initialize Slick Carousel here
+    $('.slider').slick({
+        dots: true,
+        infinite: true,
+        speed: 300,
+        slidesToShow: 1,
+        adaptiveHeight: true
     });
 
-    $(document).ready(function(){
-    $('#reviewsTitle').click(function(){
-        $('#reviewsPage').toggle();
+    // Toggle reviews and review form visibility and fetch reviews
+    $('#reviewsTitle').click(function() {
+        $('#reviewsPage, #reviewForm').toggle();
         if ($('#reviewsPage').is(':visible')) {
             fetchReviews();
         }
     });
 
-    function fetchReviews() {
+    // Fetch reviews on page load
+    fetchReviews();
+
+    // Handle review form submission
+    $('#reviewForm').on('submit', function(event) {
+        event.preventDefault();
+
         var productID = '{{ product.id }}';
-        var reviewsAPIURL = '/product/api/reviews/' + productID + '/'; // Update the URL as per your actual URL pattern
+        var reviewData = {
+            rating: $('#rating').val(),
+            reviewText: $('#reviewText').val()
+        };
+
+        // Get the CSRF token from the page
+        var csrfToken = '{{ csrf_token }}';
+
         $.ajax({
-            url: reviewsAPIURL,
+            url: '/product/api/reviews/' + productID + '/',
+            method: 'POST',
+            data: JSON.stringify(reviewData),
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': csrfToken // Include the CSRF token in the request headers
+            },
             success: function(data) {
-                $('#reviewsPage').empty();
-                data.forEach(function(review) {
-                    var reviewHtml = `
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">${review.customer__username}</h5>
-                                <h5 class="card-title">${review.rating}</h5>
-                                <p class="card-text">${review.review_Text}</p>
-                                <p class="card-text">Review Date: ${review.created}</p>
-                                <hr>
-                            </div>
-                        </div>
-                    `;
-                    $('#reviewsPage').append(reviewHtml);
-                });
+                $('#rating').val('');
+                $('#reviewText').val('');
+                fetchReviews(); // Refresh the reviews list
+            },
+            error: function(xhr, status, error) {
+                alert('Failed to add product to cart');
             }
-        });
-    }
-});
-
-    $(document).ready(function() {
-        // Click event handler for the "Add to Cart" button
-        $('#addToCartBtn').click(function() {
-            // Get the product ID and quantity from the page
-            var productID = '{{ product.id }}';
-            var quantity = parseInt($('#quantitySelector').val());
-            var stock = parseInt('{{ product.stock }}');
-
-            if (quantity > stock) {
-                alert('Specified quantity exceeds available stock')
-                return;
-            }
-            // Get the CSRF token from the page
-            var csrfToken = '{{ csrf_token }}';
-
-            // Make a POST request to your API endpoint
-            $.ajax({
-                type: 'POST',
-                url: '/order/add-to-cart/',
-                data: JSON.stringify({ product_id: productID, quantity: quantity }),
-                contentType: 'application/json',
-                headers: {
-                    'X-CSRFToken': csrfToken // Include the CSRF token in the request headers
-                },
-                success: function(response) {
-                    // Handle successful response (e.g., show a success message)
-                    alert('Product added to cart successfully');
-                },
-                error: function(xhr, status, error) {
-                    // Handle errors (e.g., show an error message)
-                    alert('Failed to add product to cart');
-                }
-            });
         });
     });
+
+    // Handle add to cart button click
+    $('#addToCartBtn').click(function() {
+        var productID = '{{ product.id }}';
+        var quantity = parseInt($('#quantitySelector').val());
+        var stock = parseInt('{{ product.stock }}');
+
+        if (quantity > stock) {
+            alert('Specified quantity exceeds available stock');
+            return;
+        }
+
+        var csrfToken = '{{ csrf_token }}';
+
+        $.ajax({
+            type: 'POST',
+            url: '/order/add-to-cart/',
+            data: JSON.stringify({ product_id: productID, quantity: quantity }),
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': csrfToken // Include the CSRF token in the request headers
+            },
+            success: function(response) {
+                alert('Product added to cart successfully');
+            },
+            error: function(xhr, status, error) {
+                alert('Failed to add product to cart');
+            }
+        });
+    });
+});
+
+// Function to fetch reviews
+function fetchReviews() {
+    var productID = '{{ product.id }}';
+    var reviewsAPIURL = '/product/api/reviews/' + productID + '/'; // Update the URL as per your actual URL pattern
+    $.ajax({
+        url: reviewsAPIURL,
+        success: function(data) {
+            $('#reviewsPage').empty();
+            data.forEach(function(review) {
+                var reviewHtml = `
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">${review.customer__username}</h5>
+                            <h5 class="card-title">${review.rating}</h5>
+                            <p class="card-text">${review.review_Text}</p>
+                            <p class="card-text">Review Date: ${review.created}</p>
+                            <hr>
+                        </div>
+                    </div>
+                `;
+                $('#reviewsPage').append(reviewHtml);
+            });
+        }
+    });
+}
+
 
 </script>
 {% endblock %}
