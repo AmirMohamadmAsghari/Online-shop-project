@@ -101,11 +101,8 @@ class OrderView(View):
                 cart[str(product_id)]['quantity'] += 1
                 request.session['cart'] = cart
             else:
-                # Handle insufficient stock scenario (optional)
-                # You can raise an error or display a message to the user
                 messages.error(request, 'Insufficient stock available.')
         else:
-            # Handle case where product is not in cart (optional)
             messages.error(request, 'Product not found in cart.')
 
     def decrease_quantity(self, request, product_id):
@@ -126,9 +123,8 @@ class OrderView(View):
             product = Product.objects.get(id=item['product_id'])
             quantity = item['quantity']
             price = product.price
-            discounted_price = product.get_discounted_price()  # Replace with your method to calculate discounted price
+            discounted_price = product.get_discounted_price()
 
-            # Calculate total price for the item considering quantity and discounted price
             total_price_item = discounted_price * quantity
 
             total_items += quantity
@@ -139,7 +135,7 @@ class OrderView(View):
                 'quantity': quantity,
                 'price': price,
                 'discounted_price': discounted_price,
-                'total_price': total_price_item  # Use total_price_item here
+                'total_price': total_price_item
             })
 
         return {
@@ -205,10 +201,9 @@ class CheckOutView(LoginRequiredMixin, View):
 
         for item in cart.values():
             product = Product.objects.get(id=item['product_id'])
-            discounted_price = product.get_discounted_price()  # Calculate discounted price
+            discounted_price = product.get_discounted_price()
             total_amount += item['quantity'] * discounted_price
 
-        # Check if there's an existing open order
         try:
             order = Order.objects.get(customer=request.user, status='open')
             order.total_amount = total_amount
@@ -222,17 +217,16 @@ class CheckOutView(LoginRequiredMixin, View):
                 status='open'
             )
 
-        # Clear existing order items if updating an existing order
         order.OrderItem.all().delete()
 
         for item in cart.values():
             product = Product.objects.get(id=item['product_id'])
-            discounted_price = product.get_discounted_price()  # Calculate discounted price
+            discounted_price = product.get_discounted_price()
             OrderItem.objects.create(
                 order=order,
                 product_id=item['product_id'],
                 quantity=item['quantity'],
-                total_price=item['quantity'] * discounted_price  # Use discounted price here
+                total_price=item['quantity'] * discounted_price
             )
 
         print(request.session['cart'])
