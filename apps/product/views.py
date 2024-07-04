@@ -12,7 +12,7 @@ from .serializers import ProductSerializer, CategorySerializer, ImageSerializer
 from rest_framework import generics, response, permissions, views
 from django.core.paginator import Paginator
 from django.contrib.auth import get_user_model
-from .tasks import my_task
+
 
 
 # Create your views here.
