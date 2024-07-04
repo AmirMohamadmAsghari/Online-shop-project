@@ -10,7 +10,7 @@ urlpatterns = [
     path('categoriesapi/', CategoryListAPIView.as_view(), name='categoryapi'),
     path('image/', ImageListAPIView.as_view(), name='imageapi'),
     path('detail/<int:product_id>/', ProductDetailView.as_view(), name='detail'),
-    path('api/reviews/<int:product_id>/', ReviewsAPIView.as_view(), name='reviews_api')
+    path('api/reviews/<int:product_id>/', ReviewsAPIView.as_view(), name='product-reviews-api'),
 ]
 
 
