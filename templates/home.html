@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Home{% endblock %}
 {% block style %}
 <style>
@@ -37,78 +38,102 @@
     }
 </style>
 {% endblock %}
+
+{% block content %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_available_languages as LANGUAGES %}
+{% get_language_info_list for LANGUAGES as languages %}
+
+<form action="{% url 'set_language' %}" method="post">
+    {% csrf_token %}
+    <select name="language" onchange="this.form.submit()">
+        {% for language in languages %}
+            <option value="{{ language.code }}" {% if language.code == LANGUAGE_CODE %}selected{% endif %}>
+                {{ language.name_local }} ({{ language.code }})
+            </option>
+        {% endfor %}
+    </select>
+    <input type="hidden" name="next" value="{{ request.path }}">
+</form>
+
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="UTF-8">
+    <title>{% trans "Your Online Shop" %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% if LANGUAGE_CODE == 'fa' %}
+    <link rel="stylesheet" href="{% static 'css/rtl.css' %}">
+    {% endif %}
 </head>
 <body>
-{% block content %}
+    <div class="container">
+        <!-- Hero section -->
+        <div class="jumbotron text-center" style="color: blanchedalmond">
+            <h1 class="display-4" style="color: #343a40">{% trans "Welcome to Your Online Shop" %}</h1>
+            <p class="lead" style="color: #343a40">{% trans "Find everything you need in one place." %}</p>
+            <hr class="my-4">
+        </div>
 
-<div class="container">
-    <!-- Hero section -->
-    <div class="jumbotron text-center" style="color: blanchedalmond">
-        <h1 class="display-4" style="color: #343a40">Welcome to Your Online Shop</h1>
-        <p class="lead" style="color: #343a40">Find everything you need in one place.</p>
-        <!-- Add search bar here -->
-        <hr class="my-4">
-    </div>
-
-    <!-- Featured products -->
-    <h2>Discounted Products</h2>
-    <div class="row">
-        {% for product in discounted_products %}
-        <div class="col-md-4">
-            <div class="card">
-                <img src="{{ product.ProductImages.first.image.url }}" class="card-img-top" alt="{{ product.title }}">
-                <div class="card-body">
-                    <h5 class="card-title">{{ product.title }}</h5>
-                    <p class="card-text">${{ product.price }}</p>
-                    <p class="card-text"><strong>Discount: </strong>{{ product.discount.amount }}%</p>
-                    <p class="card-text"><strong>Discount Type: </strong>{{ product.discount.type }}</p>
-                    <p class="card-text"><strong>Expiration Date: </strong>{{ product.discount.expiration_date }}</p>
-                    <a href="{% url 'detail' product.id %}" class="btn btn-primary">View Details</a>
+        <!-- Featured products -->
+        <h2>{% trans "Discounted Products" %}</h2>
+        <div class="row">
+            {% for product in discounted_products %}
+            <div class="col-md-4">
+                <div class="card">
+                    <img src="{{ product.ProductImages.first.image.url }}" class="card-img-top" alt="{{ product.title }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.title }}</h5>
+                        <p class="card-text">${{ product.price }}</p>
+                        <p class="card-text"><strong>{% trans "Discount" %}: </strong>{{ product.discount.amount }}%</p>
+                        <p class="card-text"><strong>{% trans "Discount Type" %}: </strong>{{ product.discount.type }}</p>
+                        <p class="card-text"><strong>{% trans "Expiration Date" %}: </strong>{{ product.discount.expiration_date }}</p>
+                        <a href="{% url 'detail' product.id %}" class="btn btn-primary">{% trans "View Details" %}</a>
+                    </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
-    <div class="pagination">
-        <span class="step-links">
-            {% if discounted_products.has_previous %}
-                <a href="?page=1">&laquo; first</a>
-                <a href="?page={{ discounted_products.previous_page_number }}">previous</a>
-            {% endif %}
+        <div class="pagination">
+            <span class="step-links">
+                {% if discounted_products.has_previous %}
+                    <a href="?page=1">&laquo; {% trans "first" %}</a>
+                    <a href="?page={{ discounted_products.previous_page_number }}">{% trans "previous" %}</a>
+                {% endif %}
 
-            <span class="current">
-                Page {{ discounted_products.number }} of {{ discounted_products.paginator.num_pages }}.
+                <span class="current">
+                    {% trans "Page" %} {{ discounted_products.number }} {% trans "of" %} {{ discounted_products.paginator.num_pages }}.
+                </span>
+
+                {% if discounted_products.has_next %}
+                    <a href="?page={{ discounted_products.next_page_number }}">{% trans "next" %}</a>
+                    <a href="?page={{ discounted_products.paginator.num_pages }}">{% trans "last" %} &raquo;</a>
+                {% endif %}
             </span>
-
-            {% if discounted_products.has_next %}
-                <a href="?page={{ discounted_products.next_page_number }}">next</a>
-                <a href="?page={{ discounted_products.paginator.num_pages }}">last &raquo;</a>
-            {% endif %}
-        </span>
+        </div>
     </div>
-</div>
 
-<!-- Categories with Discounts -->
-<div class="container mt-5">
-    <h2>Categories with Discounts</h2>
-    <div class="row">
-        {% for category in discounted_categories %}
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">{{ category.name }}</h5>
-                    <p class="card-text"><strong>Discount: </strong>{{ category.discount.amount }}%</p>
-                    <p class="card-text">Explore discounted products in the {{ category.name }} category.</p>
-                    <a href="{% url "category-products" category.id %}" class="btn btn-primary">Shop Now</a>
+    <!-- Categories with Discounts -->
+    <div class="container mt-5">
+        <h2>{% trans "Categories with Discounts" %}</h2>
+        <div class="row">
+            {% for category in discounted_categories %}
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ category.name }}</h5>
+                        <p class="card-text"><strong>{% trans "Discount" %}: </strong>{{ category.discount.amount }}%</p>
+                        <p class="card-text">{% trans "Explore discounted products in the" %} {{ category.name }} {% trans "category." %}</p>
+                        <a href="{% url "category-products" category.id %}" class="btn btn-primary">{% trans "Shop Now" %}</a>
+                    </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
-</div>
-
+</body>
+</html>
 
 <!-- Bootstrap JS (Optional) -->
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 {% endblock %}
-</body>
