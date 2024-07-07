@@ -4,9 +4,9 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from apps.product.models import Product, Image
+from apps.product.models import Product, Image, Discount
 from apps.order.models import OrderItem
-from .forms import ProductForm, ImageForm, SalesFilterForm
+from .forms import ProductForm, ImageForm, SalesFilterForm, DiscountForm
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 
@@ -50,12 +50,14 @@ class SellerPanelView(LoginRequiredMixin, UserPassesTestMixin, View):
             sales_count = sum(item.quantity for item in order_items)
             total_income = sum(item.total_price for item in order_items)
             sales_dates = order_items.values_list('order__created', flat=True)
+            discount_amount = product.discount.amount if product.discount else None
 
             sales_data.append({
                 'product': product,
                 'sales_count': sales_count,
                 'total_income': total_income,
                 'sales_dates': sales_dates,
+                'discount_amount': discount_amount,
             })
 
         return render(request, 'seller_panel.html', {
@@ -129,3 +131,25 @@ class PermanentDeleteProductView(LoginRequiredMixin, View):
         product = get_object_or_404(Product, id=product_id, seller=request.user, is_deleted=True)
         product.delete()
         return redirect('seller-panel')
+
+
+class CreateDiscountCodeView(LoginRequiredMixin, UserPassesTestMixin, View):
+    template_name = 'create_discount.html'
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='Sellers').exists()
+
+    def get(self, request):
+        form = DiscountForm(user=request.user)
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request):
+        form = DiscountForm(request.POST, user=request.user)
+        if form.is_valid():
+            discount = form.save()
+            selected_products = form.cleaned_data['products']
+            for product in selected_products:
+                product.discount = discount
+                product.save()
+            return redirect('seller-panel')  # Redirect to seller panel after success
+        return render(request, self.template_name, {'form': form})
