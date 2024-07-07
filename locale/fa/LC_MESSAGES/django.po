@@ -1,0 +1,192 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-06 14:04+0330\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: fa\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: apps/user/models.py:35
+msgid "groups"
+msgstr "گروه ها"
+
+#: apps/user/validators.py:13
+#, python-brace-format
+msgid "Password must be at least {0} characters long."
+msgstr "رمز عبور باید حداقل {0} کاراکتر باشد."
+
+#: apps/user/validators.py:21
+msgid "Password must contain at least one uppercase letter."
+msgstr "رمز عبور باید حداقل یک حرف بزرگ داشته باشد."
+
+#: apps/user/validators.py:25
+msgid "Password must contain at least one lowercase letter."
+msgstr "رمز عبور باید حداقل یک حرف کوچک داشته باشد."
+
+#: apps/user/validators.py:29
+msgid "Password must contain at least one digit."
+msgstr "رمز عبور باید حداقل یک رقم داشته باشد."
+
+#: public/views.py:27 templates/home.html:48 templates/products.html:7 templates/cart.html:2
+msgid "Welcome to Your Online Shop"
+msgstr "به فروشگاه آنلاین خود خوش آمدید"
+
+#: public/views.py:28 templates/home.html:49 templates/products.html:8 templates/cart.html:3
+msgid "Find everything you need in one place."
+msgstr "هر چیزی که نیاز دارید را در یک مکان پیدا کنید."
+
+#: public/views.py:29 templates/home.html:55
+msgid "Discounted Products"
+msgstr "محصولات تخفیف دار"
+
+#: public/views.py:30 templates/home.html:94
+msgid "Categories with Discounts"
+msgstr "دسته بندی های دارای تخفیف"
+
+#: templates/home.html:64 templates/home.html:101
+msgid "Discount"
+msgstr "تخفیف"
+
+#: templates/home.html:65
+msgid "Discount Type"
+msgstr "نوع تخفیف"
+
+#: templates/home.html:66
+msgid "Expiration Date"
+msgstr "تاریخ انقضا"
+
+#: templates/home.html:67 templates/products.html:32
+msgid "View Details"
+msgstr "مشاهده جزئیات"
+
+#: templates/home.html:76 templates/products.html:55
+msgid "first"
+msgstr "اول"
+
+#: templates/home.html:77 templates/products.html:56
+msgid "previous"
+msgstr "قبلی"
+
+#: templates/home.html:81 templates/products.html:61
+msgid "Page"
+msgstr "صفحه"
+
+#: templates/home.html:81 templates/products.html:61 templates/cart.html:13
+msgid "of"
+msgstr "از"
+
+#: templates/home.html:85 templates/products.html:65
+msgid "next"
+msgstr "بعدی"
+
+#: templates/home.html:86 templates/products.html:66
+msgid "last"
+msgstr "آخر"
+
+#: templates/home.html:102
+msgid "Explore discounted products in the"
+msgstr "محصولات تخفیف دار در دسته بندی"
+
+#: templates/home.html:102
+msgid "category."
+msgstr "را جستجو کنید."
+
+#: templates/home.html:103
+msgid "Shop Now"
+msgstr "اکنون خرید کنید"
+
+#: templates/products.html:10 templates/orders.html:4
+msgid "Product Photo"
+msgstr "عکس محصول"
+
+#: templates/products.html:16 templates/orders.html:10
+msgid "Discounted Price"
+msgstr "قیمت تخفیف خورده"
+
+#: templates/products.html:17
+msgid "Original Price"
+msgstr "قیمت اصلی"
+
+#: templates/products.html:20 templates/products.html:22 templates/cart.html:14
+msgid "Price"
+msgstr "قیمت"
+
+#: templates/products.html:23 templates/cart.html:15
+msgid "Stock"
+msgstr "موجودی"
+
+#: templates/products.html:24 templates/cart.html:16
+msgid "Brand"
+msgstr "برند"
+
+#: templates/products.html:25
+msgid "Quantity"
+msgstr "تعداد"
+
+#: templates/products.html:27 templates/cart.html:17
+msgid "Add to Cart"
+msgstr "افزودن به سبد خرید"
+
+#: templates/products.html:36 templates/cart.html:25
+msgid "Reviews"
+msgstr "نظرات"
+
+#: templates/products.html:42 templates/cart.html:31
+msgid "Rating"
+msgstr "رتبه بندی"
+
+#: templates/products.html:45 templates/cart.html:34
+msgid "Review"
+msgstr "نظر"
+
+#: templates/products.html:48 templates/cart.html:37
+msgid "Submit Review"
+msgstr "ارسال نظر"
+
+#: templates/products.html:60 templates/cart.html:49
+msgid "Sales Information"
+msgstr "اطلاعات فروش"
+
+#: templates/products.html:62
+msgid "Total Sales"
+msgstr "مجموع فروش"
+
+#: templates/orders.html:3
+msgid "Your Orders"
+msgstr "سفارشات شما"
+
+#: templates/orders.html:13
+msgid "No products in your cart."
+msgstr "هیچ محصولی در سبد خرید شما نیست."
+
+#: templates/orders.html:27
+msgid "Total"
+msgstr "مجموع"
+
+#: templates/orders.html:28
+msgid "Total items"
+msgstr "مجموع موارد"
+
+#: templates/orders.html:29
+msgid "Total price"
+msgstr "مجموع قیمت"
+
+#: templates/orders.html:30
+msgid "Select Address"
+msgstr "انتخاب آدرس"
+
+#: templates/orders.html:31
+msgid "Proceed to Checkout"
+msgstr "ادامه به تسویه حساب"
