@@ -1,4 +1,5 @@
-<!-- seller_panel.html -->
+<!-- templates/seller_panel.html -->
+
 {% extends 'base.html' %}
 {% block title %}Seller Panel{% endblock %}
 {% block content %}
@@ -17,14 +18,18 @@
         </div>
         <button type="submit" class="btn btn-primary">Filter</button>
     </form>
-    <a href="{% url 'product-create' %}" class="btn btn-info">Add</a>
-    <table class="table table-striped mt-3">
+
+    <h1>Create Discount</h1>
+    <a href="{% url 'create_discount' %}" class="btn btn-info">Create Discount</a>
+    <a href="{% url 'product-create' %}" class="btn btn-info">Add Product</a>
+     <table class="table table-striped mt-3">
         <thead>
             <tr>
                 <th>Product</th>
                 <th>Number of Sales</th>
                 <th>Total Income</th>
                 <th>Sales Dates</th>
+                <th>Discount Amount</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -42,6 +47,13 @@
                     </ul>
                 </td>
                 <td>
+                    {% if data.discount_amount %}
+                        %{{ data.discount_amount }}
+                    {% else %}
+                        No Discount
+                    {% endif %}
+                </td>
+                <td>
                     <form action="{% url 'delete-product' data.product.id %}" method="post" style="display:inline;">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-danger">Delete</button>
@@ -52,7 +64,6 @@
             {% endfor %}
         </tbody>
     </table>
-
     <div class="pagination">
         <span class="step-links">
             {% if page_obj.has_previous %}
