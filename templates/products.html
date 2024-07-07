@@ -1,5 +1,6 @@
 <!-- templates/products.html -->
 {% extends 'base.html' %}
+{% load i18n %}
 {% block title %}Products{% endblock %}
 {% block style %}
 <style>
@@ -57,23 +58,23 @@
 {% block content %}
 <div class="container mt-5">
     <div class="jumbotron">
-        <h1 class="display-4">Welcome to Your Online Shop</h1>
-        <p class="lead">Find everything you need in one place.</p>
+        <h1 class="display-4">{% trans "Welcome to Your Online Shop" %}</h1>
+        <p class="lead">{% trans "Find everything you need in one place." %}</p>
         <hr class="my-4">
     </div>
 
     <div class="row">
         <!-- Category Sidebar -->
         <div class="col-md-3 mb-4">
-            <h2>Categories</h2>
+            <h2>{% trans "Categories" %}</h2>
             <ul class="list-group" id="categories">
-                <a href="{% url 'products' %}" class="list-group-item category-item {% if all_products %}active{% endif %}">All Products</a>
+                <a href="{% url 'products' %}" class="list-group-item category-item {% if all_products %}active{% endif %}">{% trans "All Products" %}</a>
                 {% for category in categories %}
                     <a href="{% url 'category-products' category.id %}" class="list-group-item category-item {% if selected_category and selected_category.id == category.id %}active{% endif %}">{{ category.name }}</a>
                 {% endfor %}
             </ul>
             {% if child_categories %}
-            <h2>Subcategories</h2>
+            <h2>{% trans "Subcategories" %}</h2>
             <ul class="list-group" id="subcategories">
                 {% for child_category in child_categories %}
                     <a href="{% url 'category-products' child_category.id %}" class="list-group-item category-item {% if selected_category and selected_category.id == child_category.id %}active{% endif %}">{{ child_category.name }}</a>
@@ -87,14 +88,14 @@
             <!-- Search Bar -->
             <form method="GET" action="{% url 'products' %}">
                 <div class="input-group mb-4">
-                    <input type="text" name="search" class="form-control" placeholder="Search for products" value="{{ search_query }}">
+                    <input type="text" name="search" class="form-control" placeholder="{% trans 'Search for products' %}" value="{{ search_query }}">
                     <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="submit">Search</button>
+                        <button class="btn btn-outline-secondary" type="submit">{% trans "Search" %}</button>
                     </div>
                 </div>
             </form>
 
-            <h2 class="mb-4">{% if selected_category %}{{ selected_category.name }}{% else %}All Products{% endif %}</h2>
+            <h2 class="mb-4">{% if selected_category %}{{ selected_category.name }}{% else %}{% trans "All Products" %}{% endif %}</h2>
             <div class="row products" id="products">
                 {% for product in products %}
                 <div class="col-md-4 mb-4 product-item">
@@ -104,12 +105,12 @@
                         {% endif %}
                         <div class="card-body">
                             <h5 class="card-title">{{ product.title }}</h5>
-                            <p class="card-text">Description: {{ product.description }}</p>
-                            <p class="card-text">Price: {{ product.price }}</p>
+                            <p class="card-text">{% trans "Description" %}: {{ product.description }}</p>
+                            <p class="card-text">{% trans "Price" %}: {{ product.price }}</p>
                             {% if product.stock > 0 %}
-                            <a href="{% url 'detail' product.id %}" class="btn btn-primary">View Details</a>
+                            <a href="{% url 'detail' product.id %}" class="btn btn-primary">{% trans "View Details" %}</a>
                             {% else %}
-                            <p class="out-of-stock">Out of Stock</p>
+                            <p class="out-of-stock">{% trans "Out of Stock" %}</p>
                             {% endif %}
                         </div>
                     </div>
@@ -119,17 +120,17 @@
             <div class="pagination">
                 <span class="step-links">
                     {% if products.has_previous %}
-                        <a href="?page=1">&laquo; first</a>
-                        <a href="?page={{ products.previous_page_number }}">previous</a>
+                        <a href="?page=1">&laquo; {% trans "first" %}</a>
+                        <a href="?page={{ products.previous_page_number }}">{% trans "previous" %}</a>
                     {% endif %}
 
                     <span class="current">
-                        Page {{ products.number }} of {{ products.paginator.num_pages }}.
+                        {% trans "Page" %} {{ products.number }} {% trans "of" %} {{ products.paginator.num_pages }}.
                     </span>
 
                     {% if products.has_next %}
-                        <a href="?page={{ products.next_page_number }}">next</a>
-                        <a href="?page={{ products.paginator.num_pages }}">last &raquo;</a>
+                        <a href="?page={{ products.next_page_number }}">{% trans "next" %}</a>
+                        <a href="?page={{ products.paginator.num_pages }}">{% trans "last" %} &raquo;</a>
                     {% endif %}
                 </span>
             </div>
