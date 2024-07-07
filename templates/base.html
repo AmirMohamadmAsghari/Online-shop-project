@@ -1,3 +1,4 @@
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,6 +14,31 @@
 </head>
 <body class="bg-gray-100">
 {% include 'navbar.html' %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<!--        <a class="navbar-brand" href="{% url 'home' %}">{% trans "My Shop" %}</a>-->
+<!--        <div class="collapse navbar-collapse" id="navbarNav">-->
+<!--            <ul class="navbar-nav mr-auto">-->
+<!--                <li class="nav-item">-->
+<!--                    <a class="nav-link" href="{% url 'products' %}">{% trans "Products" %}</a>-->
+<!--                </li>-->
+<!--            </ul>-->
+            <!-- Language Switcher -->
+            <form action="{% url 'set_language' %}" method="post" class="form-inline my-2 my-lg-0">
+                {% csrf_token %}
+                <select name="language" onchange="this.form.submit()" class="form-control mr-sm-2">
+                    {% get_current_language as LANGUAGE_CODE %}
+                    {% get_available_languages as LANGUAGES %}
+                    {% get_language_info_list for LANGUAGES as languages %}
+                    {% for language in languages %}
+                        <option value="{{ language.code }}" {% if language.code == LANGUAGE_CODE %}selected{% endif %}>
+                            {{ language.name_local }} ({{ language.code }})
+                        </option>
+                    {% endfor %}
+                </select>
+                <input type="hidden" name="next" value="{{ request.path }}">
+            </form>
+        </div>
+    </nav>
 {% include 'messages.html' %}
 {% block content %}
 {% endblock %}
