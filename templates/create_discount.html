@@ -1,0 +1,28 @@
+<!-- templates/create_discount.html -->
+
+{% extends 'base.html' %}
+{% block title %}Create Discount{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h1>Create Discount</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Create Discount</button>
+    </form>
+</div>
+
+<!-- Include flatpickr CSS and JS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        flatpickr("input[type=date]", {
+            altInput: true,
+            altFormat: "F j, Y",
+            dateFormat: "Y-m-d",
+        });
+    });
+</script>
+{% endblock %}
