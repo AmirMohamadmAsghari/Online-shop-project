@@ -1,4 +1,6 @@
+<!-- templates/orders.html -->
 {% extends 'base.html' %}
+{% load i18n %}
 {% load custom_filters %}
 {% block title %}Your Cart{% endblock %}
 {% block style %}
@@ -89,7 +91,7 @@
 {% endblock %}
 {% block content %}
 <div class="container mt-5 cart-content">
-    <h1>Your Orders</h1>
+    <h1>{% trans 'Your Orders' %}</h1>
     {% if products %}
         <div class="cart-items-container">
             {% for product in products %}
@@ -102,26 +104,27 @@
                     <div class="cart-item-details">
                         <h3>{{ product.product.title }}</h3>
                         <p>{{ product.product.description }}</p>
-                        <p class="cart-item-price">Price: ${{ product.price }}</p>
-                        <p>Discounted Price: ${{ product.discounted_price }}</p>  <!-- Display discounted price -->
-                        <p>Quantity: {{ product.quantity }}</p>
+                        <p class="cart-item-price">{% trans 'Price' %}: ${{ product.price }}</p>
+                        {% if product.discounted_price and product.discounted_price < product.price %}
+                            <p>{% trans 'Discounted Price' %}: ${{ product.discounted_price }}</p>
+                        {% endif %}
+                        <p>{% trans 'Quantity' %}: {{ product.quantity }}</p>
                         <button class="btn btn-secondary btn-increase" data-id="{{ product.product.id }}">+</button>
                         <button class="btn btn-secondary btn-decrease" data-id="{{ product.product.id }}">-</button>
                     </div>
                 </div>
             {% endfor %}
-
         </div>
     {% else %}
-        <p>No products in your cart.</p>
+        <p>{% trans 'No products in your cart.' %}</p>
     {% endif %}
 
     <div class="total-section">
-        <h2>Total</h2>
-        <p>Total items: {{ total_items }}</p>
-        <p>Total price: ${{ total_price }}</p>
-        <a href="{% url 'address-list' %}" class="btn btn-add">Select Address</a>
-        <a href="{% url 'checkout' %}" class="checkout-button">Proceed to Checkout</a>
+        <h2>{% trans 'Total' %}</h2>
+        <p>{% trans 'Total items' %}: {{ total_items }}</p>
+        <p>{% trans 'Total price' %}: ${{ total_price }}</p>
+        <a href="{% url 'address-list' %}" class="btn btn-add">{% trans 'Select Address' %}</a>
+        <a href="{% url 'checkout' %}" class="checkout-button">{% trans 'Proceed to Checkout' %}</a>
     </div>
 </div>
 {% endblock %}
