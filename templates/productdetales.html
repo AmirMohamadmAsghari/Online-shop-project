@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% block title %}Product Details{% endblock %}
 {% block style %}
 <style>
@@ -47,7 +48,7 @@
             <div class="slider">
                 {% for image in images %}
                 <div>
-                    <img src="{{ image.image.url }}" class="product-photo" alt="Product Photo">
+                    <img src="{{ image.image.url }}" class="product-photo" alt="{% trans 'Product Photo' %}">
                 </div>
                 {% endfor %}
             </div>
@@ -58,31 +59,27 @@
                 <h1 class="display-4">{{ product.title }}</h1>
                 <p class="lead">{{ product.description }}</p>
                 <hr class="my-4">
-                <p>Price: ${{ product.price }}</p>
                 {% if discounted_price and discounted_price < product.price %}
-                    <p>Discounted Price: {{ discounted_price }}</p>
-                    <p>Original Price: <del>{{ product.price }}</del></p>
+                    <p>{% trans 'Discounted Price' %}: {{ discounted_price }}</p>
+                    <p>{% trans 'Original Price' %}: <del>{{ product.price }}</del></p>
                 {% else %}
-                    <p>Price: {{ product.price }}</p>
+                    <p>{% trans 'Price' %}: {{ product.price }}</p>
                 {% endif %}
-                <p>Stock: {{ product.stock }}</p>
-                <p>Brand: {{ product.brand }}</p>
-                <label for="quantitySelector">Quantity:</label>
+                <p>{% trans 'Stock' %}: {{ product.stock }}</p>
+                <p>{% trans 'Brand' %}: {{ product.brand }}</p>
+                <label for="quantitySelector">{% trans 'Quantity' %}:</label>
                 <input type="number" id="quantitySelector" name="quantity" min="1" max="{{ product.stock }}" value="1">
-                <button type="button" class="btn btn-primary" id="addToCartBtn">Add to Cart</button>
-
+                <button type="button" class="btn btn-primary" id="addToCartBtn">{% trans 'Add to Cart' %}</button>
             </div>
         </div>
-
-
-
     </div>
+
     <div class="row mt-5">
         <div class="col-md-6">
             <!-- Reviews -->
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title" id="reviewsTitle">Reviews</h5>
+                    <h5 class="card-title" id="reviewsTitle">{% trans 'Reviews' %}</h5>
                     <!-- Add review cards here -->
                     <div id="reviewsPage" style="display: none;">
                         <!-- Review cards will be dynamically added here -->
@@ -91,32 +88,30 @@
                     <form id="reviewForm" style="display: none;" method="post">
                         {% csrf_token %}
                         <div class="form-group">
-                            <label for="rating">Rating</label>
+                            <label for="rating">{% trans 'Rating' %}</label>
                             <input type="number" class="form-control" id="rating" name="rating" min="1" max="5" required>
                         </div>
                         <div class="form-group">
-                            <label for="reviewText">Review</label>
+                            <label for="reviewText">{% trans 'Review' %}</label>
                             <textarea class="form-control" id="reviewText" name="reviewText" rows="3" required></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary">Submit Review</button>
+                        <button type="submit" class="btn btn-primary">{% trans 'Submit Review' %}</button>
                     </form>
                 </div>
             </div>
         </div>
-    </div>
         <div class="col-md-6">
             <!-- Sales Information -->
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Sales Information</h5>
+                    <h5 class="card-title">{% trans 'Sales Information' %}</h5>
                     <!-- Display total sales dynamically -->
-                    <p>Total Sales: {{ product.sales_number }}</p>
+                    <p>{% trans 'Total Sales' %}: {{ product.sales_number }}</p>
                     <!-- Add more sales information here -->
                 </div>
             </div>
         </div>
     </div>
-
 </div>
 {% endblock %}
 {% block script %}
