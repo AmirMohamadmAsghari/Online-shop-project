@@ -1,5 +1,5 @@
 from django import forms
-from apps.product.models import Product, Image
+from apps.product.models import Product, Image, Discount
 
 
 class SalesFilterForm(forms.Form):
@@ -25,3 +25,24 @@ class ImageForm(forms.ModelForm):
     class Meta:
         model = Image
         fields = ['image']
+
+
+class DiscountForm(forms.ModelForm):
+    products = forms.ModelMultipleChoiceField(
+        queryset=Product.objects.none(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="Apply to Products"
+    )
+    expiration_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+
+    class Meta:
+        model = Discount
+        fields = ['amount', 'type', 'expiration_date', 'products']
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user:
+            self.fields['products'].queryset = Product.objects.filter(seller=user)
+
