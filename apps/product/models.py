@@ -1,4 +1,5 @@
 from django.db import models
+from decimal import Decimal
 from apps.user.models import CustomUser
 from apps.core.models import TimeStampedMixin, LogicalMixin
 from django.conf import settings
@@ -20,25 +21,25 @@ class Product(TimeStampedMixin, LogicalMixin):
         original_price = self.price
 
         # Apply product discount
-        if self.discount:
+        if self.discount and not self.discount.is_deleted:
             if self.discount.type == 'percentage':
-                discount_value = (self.discount.amount / 100) * original_price
+                discount_value = (Decimal(self.discount.amount) / Decimal(100)) * original_price
                 original_price -= discount_value
             elif self.discount.type == 'fixed':
-                original_price -= self.discount.amount
+                original_price -= Decimal(self.discount.amount)
 
         # Apply category discounts
         category = self.category
         while category:
-            if category.discount:
+            if category.discount and not category.discount.is_deleted:
                 if category.discount.type == 'percentage':
-                    discount_value = (category.discount.amount / 100) * original_price
+                    discount_value = (Decimal(category.discount.amount) / Decimal(100)) * original_price
                     original_price -= discount_value
                 elif category.discount.type == 'fixed':
-                    original_price -= category.discount.amount
+                    original_price -= Decimal(category.discount.amount)
             category = category.parent_category
 
-        return max(original_price, 0)
+        return max(original_price, Decimal(0))
 
 
     class Meta:
