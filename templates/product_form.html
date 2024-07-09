@@ -1,0 +1,15 @@
+<!-- product_form.html -->
+{% extends 'base.html' %}
+{% block title %}Add/Update Product{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h1>{% if product_form.instance.pk %}Update{% else %}Add{% endif %} Product</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ product_form.as_p }}
+        <h3>Upload Images</h3>
+        <input type="file" name="image" multiple>
+        <button type="submit" class="btn btn-primary">{% if product_form.instance.pk %}Update{% else %}Add{% endif %} Product</button>
+    </form>
+</div>
+{% endblock %}
