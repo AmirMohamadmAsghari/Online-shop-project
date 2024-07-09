@@ -1,13 +1,17 @@
 import json
+from smtplib import SMTPServerDisconnected
+
+from django.contrib.auth.views import PasswordResetView
 from django.http import HttpResponse, JsonResponse
 from .models import CustomUser, Address
 from apps.order.models import Order
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash, views as auth_views
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.views import View
+from django.urls import reverse_lazy
 from .validators import validate_password_strength
 from .forms import UserProfileForm, CustomPasswordChangeForm
 from .utils import generate_otp, send_otp_email, store_otp_in_redis
@@ -67,7 +71,7 @@ class Email_Verification(View):
     def get(self, request):
         email = request.session.get('email')
         otp_code = generate_otp(email)
-        store_otp_in_redis(otp_code,email)
+        store_otp_in_redis(otp_code, email)
         send_otp_email(email, otp_code)
         return render(request, self.template_name)
 
@@ -235,7 +239,7 @@ class AddressSelectView(LoginRequiredMixin, View):
 class AddressEditView(LoginRequiredMixin, View):
     def get(self, request, address_id):
         address = get_object_or_404(Address, id=address_id, user=request.user)
-        return render(request, 'address_edit.html', {'address':address})
+        return render(request, 'address_edit.html', {'address': address})
 
     def post(self, request, address_id):
         address = get_object_or_404(Address, id=address_id, user=request.user)
@@ -299,3 +303,26 @@ class UserProfileView(LoginRequiredMixin, View):
             'addresses': user.CustomerAddress.all(),
             'orders': Order.objects.filter(customer=user)
         })
+
+
+class CustomPasswordResetView(PasswordResetView):
+    template_name = 'registration/password_reset_form.html'
+    email_template_name = 'registration/password_reset_email.html'
+    subject_template_name = 'registration/password_reset_subject.txt'
+    success_url = reverse_lazy('password_reset_done')
+
+    def post(self, request, *args, **kwargs):
+        try:
+            response = super().post(request, *args, **kwargs)
+            return response
+        except SMTPServerDisconnected:
+            messages.error(request, "There was a problem connecting to the email server. Please try again later.")
+            return redirect('password_reset')
+
+
+class CustomPasswordResetConfrimView(auth_views.PasswordResetConfirmView):
+    template_name = 'registration/password_reset_confirm.html'
+    success_url = reverse_lazy('password_reset_complete')
+
+
+
