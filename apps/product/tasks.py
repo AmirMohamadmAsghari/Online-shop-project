@@ -11,5 +11,6 @@ def clear_expired_discounts():
 
     for discount in expired_discounts:
         discount.is_deleted = True
+        discount.is_active = False
         discount.save()
         print(f"Discount ID {discount.id}: is_delete set to {discount.is_deleted}")
