@@ -1,6 +1,5 @@
 import json
 from smtplib import SMTPServerDisconnected
-
 from django.contrib.auth.views import PasswordResetView
 from django.http import HttpResponse, JsonResponse
 from .models import CustomUser, Address
@@ -62,6 +61,10 @@ class RegisterUserView(View):
 
         user = CustomUser.objects.create_user(username=username, email=email, password=password)
         messages.success(request, 'User registered successfully.')
+        email = request.session.get('email')
+        otp_code = generate_otp(email)
+        store_otp_in_redis(otp_code, email)
+        send_otp_email(email, otp_code)
         return redirect('email_verification')
 
 
@@ -69,10 +72,10 @@ class Email_Verification(View):
     template_name = 'email_verification.html'
 
     def get(self, request):
-        email = request.session.get('email')
-        otp_code = generate_otp(email)
-        store_otp_in_redis(otp_code, email)
-        send_otp_email(email, otp_code)
+        # email = request.session.get('email')
+        # otp_code = generate_otp(email)
+        # store_otp_in_redis(otp_code, email)
+        # send_otp_email(email, otp_code)
         return render(request, self.template_name)
 
     def post(self, request):
