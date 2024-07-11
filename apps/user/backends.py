@@ -31,5 +31,4 @@ class CustomUserAuthBackend(ModelBackend):
                 pass
 
         # If username is not provided or user does not exist, return None
-        print('aaaa')
         return None
