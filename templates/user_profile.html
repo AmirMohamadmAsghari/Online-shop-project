@@ -145,7 +145,7 @@
             {% for order in orders %}
             <li class="order-item">
                 <div class="order-info">
-                    <strong>Order ID:</strong> {{ order.id }} - <strong>Status:</strong> {{ order.status }}
+                    <strong>Order ID:</strong> {{ order.id }} - <strong>Status:</strong> {{ order.status }} - <strong>Date:</strong> {{ order.modified}} - <strong>Total Amount:</strong> - {{ order.total_amount }}
                 </div>
             </li>
             {% endfor %}
