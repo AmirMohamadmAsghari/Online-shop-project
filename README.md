@@ -27,19 +27,45 @@ This project is an e-commerce web application built with Django, featuring a com
 
     ```sh
     git clone https://github.com/AmirMohamadmAsghari/Online-shop-project.git
-    cd yourproject
+    cd Online-shop-project
     ```
 
-2. **activate a virtual environment:**
+2. **Install dependencies using Poetry:**
+
+    ```sh
+    poetry install
+    ```
+
+3. **Activate the virtual environment:**
 
     ```sh
     poetry shell
     ```
 
-3. **Install dependencies:**
+4. **Environment variables:**
 
-    ```sh
-    pip install -r requirements.txt
+    Create a `.env` file in the root of your project and add the following configurations:
+
+    
+    ```env
+    SECRET_KEY=your-secret-key
+    DEBUG=True
+    ALLOWED_HOSTS=localhost,127.0.0.1
+
+    DATABASE_URL=postgres://user:password@localhost:5432/yourdatabase
+
+    EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+    EMAIL_HOST=smtp.yourprovider.com
+    EMAIL_PORT=587
+    EMAIL_USE_TLS=True
+    EMAIL_HOST_USER=your-email@domain.com
+    EMAIL_HOST_PASSWORD=your-email-password
+
+    CACHE_LOCATION=redis://127.0.0.1:6379/1
+    CACHE_CLIENT_CLASS=django_redis.client.DefaultClient
+
+    CELERY_BROKER_URL=redis://localhost:6379/0
+    CELERY_RESULT_BACKEND=redis://localhost:6379/0
     ```
 
 5. **Run database migrations:**
