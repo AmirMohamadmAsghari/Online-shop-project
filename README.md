@@ -16,7 +16,7 @@ This project is an e-commerce web application built with Django, featuring a com
 
 <p align="center">
   <img src="assets/images/homepage.png" alt="Screenshot 1" width="400" style="margin-right: 10px;">
-  <img src="assets/images/login.png" alt="Screenshot 2" width="400" style="margin-right: 10px;">
+  <img src="assets/images/sellerpanel.png" alt="Screenshot 2" width="400" style="margin-right: 10px;">
   <img src="assets/images/cart.png" alt="Screenshot 3" width="400">
 </p>
 
