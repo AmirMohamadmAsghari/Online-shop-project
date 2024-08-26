@@ -11,6 +11,13 @@ This project is an e-commerce web application built with Django, featuring a com
 - **Asynchronous Tasks**: Background task handling with Celery and periodic tasks using Celery Beat.
 - **Redis Integration**: Caching and Celery message broker and result backend using Redis.
 
+## Project Screenshots
+
+![Screenshot 1](assets/images/cart.png)
+![Screenshot 2](assets/images/homepage.png)
+![Screenshot 3](assets/images/login.png)
+
+
 ## Installation
 
 ### Prerequisites
