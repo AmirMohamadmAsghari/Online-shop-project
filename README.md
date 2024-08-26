@@ -20,6 +20,10 @@ This project is an e-commerce web application built with Django, featuring a com
   <img src="assets/images/cart.png" alt="Screenshot 3" width="400">
 </p>
 
+## Project Slideshow
+
+![Project Slideshow](assets/images/allscreen.gif)
+
 ## Installation
 
 ### Prerequisites
